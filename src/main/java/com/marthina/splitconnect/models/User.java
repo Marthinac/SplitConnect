@@ -1,4 +1,4 @@
-package com.marthina.splitconnect.model;
+package com.marthina.splitconnect.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -7,18 +7,15 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Data
-@Table(name = "USERS")
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Integer id;
+    private Long id;
 
-    String name;
-
-    String country;
-
-    String email;
-
-    String password;
+    private String name;
+    private String country;
+    private String email;
+    private String password;
 }
