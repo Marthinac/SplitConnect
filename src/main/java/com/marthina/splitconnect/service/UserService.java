@@ -1,8 +1,10 @@
 package com.marthina.splitconnect.service;
 
+import com.marthina.splitconnect.dto.UserCreateDTO;
+import com.marthina.splitconnect.dto.UserResponseDTO;
 import com.marthina.splitconnect.exception.EmailAlreadyInUseException;
 import com.marthina.splitconnect.exception.UserNotFoundException;
-import com.marthina.splitconnect.models.User;
+import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +19,20 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User create(User user) {
-        if (userRepository.existsByEmail(user.getEmail())){
-            throw new EmailAlreadyInUseException(user.getEmail());
+    public UserResponseDTO create(UserCreateDTO dto) {
+        if (userRepository.existsByEmail(dto.getEmail())){
+            throw new EmailAlreadyInUseException(dto.getEmail());
         }
 
-        return userRepository.save(user);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setCountry(dto.getCountry());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+
+        User saved = userRepository.save(user);
+
+        return toResponseDTO(saved);
     }
 
     public User findById(Long id) {
@@ -50,5 +60,14 @@ public class UserService {
 
     public void delete(Long id) {
         userRepository.deleteById(id);
+    }
+
+    private UserResponseDTO toResponseDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setCountry(user.getCountry());
+        dto.setEmail(user.getEmail());
+        return dto;
     }
 }

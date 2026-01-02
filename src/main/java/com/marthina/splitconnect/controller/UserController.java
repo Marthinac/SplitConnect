@@ -1,8 +1,8 @@
 package com.marthina.splitconnect.controller;
 
-import com.marthina.splitconnect.exception.UserNotFoundException;
-import com.marthina.splitconnect.models.User;
-import com.marthina.splitconnect.repository.UserRepository;
+import com.marthina.splitconnect.dto.UserCreateDTO;
+import com.marthina.splitconnect.dto.UserResponseDTO;
+import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +21,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> create (@RequestBody User newUser){
-        User created = userService.create(newUser);
+    public ResponseEntity<UserResponseDTO> create (@RequestBody UserCreateDTO dto){
+        UserResponseDTO created = userService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

@@ -1,4 +1,4 @@
-package com.marthina.splitconnect.models;
+package com.marthina.splitconnect.model;
 
 import jakarta.persistence.*;
 

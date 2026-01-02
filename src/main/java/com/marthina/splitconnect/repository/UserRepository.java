@@ -1,6 +1,6 @@
 package com.marthina.splitconnect.repository;
 
-import com.marthina.splitconnect.models.User;
+import com.marthina.splitconnect.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
