@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.controller;
 
+import com.marthina.splitconnect.dto.SubscriptionDTO;
 import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.service.SubscriptionService;
 import org.springframework.http.HttpStatus;
@@ -30,12 +31,12 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Subscription>> findAll() {
+    public ResponseEntity<List<SubscriptionDTO>> findAll() {
         return ResponseEntity.ok(subsService.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Subscription> update(@PathVariable Long id, @RequestBody Subscription subscription){
+    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id, @RequestBody Subscription subscription){
         return ResponseEntity.ok(subsService.update(id, subscription));
     }
 

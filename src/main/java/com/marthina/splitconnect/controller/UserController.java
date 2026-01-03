@@ -27,18 +27,18 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id){
+    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id){
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserResponseDTO>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user){
-        return ResponseEntity.ok(userService.update(id, user));
+    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody UserCreateDTO dto){
+        return ResponseEntity.ok(userService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")

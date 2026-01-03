@@ -8,6 +8,7 @@ import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,28 +36,34 @@ public class UserService {
         return toResponseDTO(saved);
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    public UserResponseDTO findById(Long id) {
+        return toResponseDTO(userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id)));
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> findAll() {
+        List<User> users = userRepository.findAll();
+        List<UserResponseDTO> response = new ArrayList<>();
+
+        for (User user : users) {
+            response.add(toResponseDTO(user));
+        }
+
+        return response;
+        //com steam - return userRepository.findAll().stream().map(this::toResponseDTO).toList();
     }
 
-    public User update(Long id, User updated) {
-        User user = findById(id);
+    public UserResponseDTO update(Long id, UserCreateDTO dto) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        user.setName(updated.getName());
-        user.setCountry(updated.getCountry());
-        //user.setEmail(updated.getEmail());
-        //user.setPassword(updated.getPassword());
+        user.setName(dto.getName());
+        user.setCountry(dto.getCountry());
 
-        return userRepository.save(user);
+        return toResponseDTO(userRepository.save(user));
     }
 
-    //public User updateEmail()
-
-    //public User updatePassword()
+    //todo public User updateEmail()
+    //todo public User updatePassword()
 
     public void delete(Long id) {
         userRepository.deleteById(id);
