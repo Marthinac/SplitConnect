@@ -1,11 +1,11 @@
 package com.marthina.splitconnect.service;
 
 import com.marthina.splitconnect.dto.SubscriptionDTO;
-import com.marthina.splitconnect.dto.UserResponseDTO;
+import com.marthina.splitconnect.exception.ServiceNotFoundException;
 import com.marthina.splitconnect.exception.SubscriptionNotFoundException;
-import com.marthina.splitconnect.exception.UserNotFoundException;
+import com.marthina.splitconnect.model.Services;
 import com.marthina.splitconnect.model.Subscription;
-import com.marthina.splitconnect.model.User;
+import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +16,21 @@ import java.util.List;
 public class SubscriptionService {
 
     private final SubscriptionRepository subsRepository;
+    private final ServicesRepository servicesRepository;
 
-    public SubscriptionService(SubscriptionRepository subsRepository) {
+    public SubscriptionService(SubscriptionRepository subsRepository,
+                               ServicesRepository servicesRepository) {
         this.subsRepository = subsRepository;
+        this.servicesRepository = servicesRepository;
     }
 
     public SubscriptionDTO create(SubscriptionDTO dto) {
+
+        Services services = servicesRepository.findById(dto.getServiceId())
+                .orElseThrow(() -> new ServiceNotFoundException(dto.getServiceId()));
+
         Subscription subscription = new Subscription();
-        subscription.setServiceId(dto.getServiceId());
+        subscription.setService(services);
         subscription.setAmount(dto.getAmount());
         subscription.setDateStart(dto.getDateStart());
         subscription.setDateEnd(dto.getDateEnd());
@@ -35,9 +42,9 @@ public class SubscriptionService {
         return toDTO(saved);
     }
 
-    public Subscription findById(Long id) {
-        return subsRepository.findById(id)
-                .orElseThrow(() -> new SubscriptionNotFoundException(id));
+    public SubscriptionDTO findById(Long id) {
+        return toDTO(subsRepository.findById(id)
+                .orElseThrow(() -> new SubscriptionNotFoundException(id)));
     }
 
     public List<SubscriptionDTO> findAll() {
@@ -69,7 +76,7 @@ public class SubscriptionService {
     private SubscriptionDTO toDTO(Subscription s) {
         SubscriptionDTO dto = new SubscriptionDTO();
         dto.setId(s.getId());
-        //todo dto.setServiceId(s.getService());
+        dto.setServiceId(s.getService().getId());
         dto.setAmount(s.getAmount());
         dto.setDateStart(s.getDateStart());
         dto.setDateEnd(s.getDateEnd());

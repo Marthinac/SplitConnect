@@ -20,13 +20,13 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<Subscription> create (@RequestBody Subscription subscription) {
-        Subscription created = subsService.create(subscription);
+    public ResponseEntity<SubscriptionDTO> create (@RequestBody SubscriptionDTO dto) {
+        SubscriptionDTO created = subsService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Subscription> findById(@PathVariable Long id){
+    public ResponseEntity<SubscriptionDTO> findById(@PathVariable Long id){
         return ResponseEntity.ok(subsService.findById(id));
     }
 
@@ -36,8 +36,8 @@ public class SubscriptionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id, @RequestBody Subscription subscription){
-        return ResponseEntity.ok(subsService.update(id, subscription));
+    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id, @RequestBody SubscriptionDTO dto){
+        return ResponseEntity.ok(subsService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
