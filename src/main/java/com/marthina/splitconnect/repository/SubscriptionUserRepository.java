@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUser, Long> {
+    Long user(User user);
 
-    boolean existsBySubscriptionAndUser(Subscription subscription, User user);
-    long countBySubscription(Subscription subscription);
+    //boolean existsBySubscriptionAndUser(Subscription subscription, User user);
+    //long countBySubscription(Subscription subscription);
 }
