@@ -17,14 +17,24 @@ public class SubscriptionUser {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_user")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "id_subs")
+    @JoinColumn(name = "subs_id")
     private Subscription subscription;
 
     private String role;
-    private LocalDate date;
+    private LocalDate createdAt;
+
+    protected SubscriptionUser() {
+    }
+
+    public SubscriptionUser(User user, Subscription subscription, String role) {
+        this.user = user;
+        this.subscription = subscription;
+        this.role = role;
+        this.createdAt = LocalDate.now();
+    }
 
 }

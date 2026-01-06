@@ -1,13 +1,17 @@
 package com.marthina.splitconnect.service;
 
 import com.marthina.splitconnect.dto.SubscriptionUserDTO;
-import com.marthina.splitconnect.dto.UserResponseDTO;
+import com.marthina.splitconnect.exception.SubscriptionNotFoundException;
+import com.marthina.splitconnect.exception.UserNotFoundException;
+import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
+import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
+import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,20 +21,42 @@ import java.util.List;
 public class SubscriptionUserService {
 
     private final SubscriptionUserRepository subscriptionUserRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
 
-    public SubscriptionUserService(SubscriptionUserRepository subscriptionUserRepository) {
+    public SubscriptionUserService(SubscriptionUserRepository subscriptionUserRepository,
+                                   UserRepository userRepository,
+                                   SubscriptionRepository subscriptionRepository) {
         this.subscriptionUserRepository = subscriptionUserRepository;
+        this.userRepository = userRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
-    //todo public SubscriptionUserDTO create(SubscriptionUserDTO dto) { }
+        @Transactional
+    public SubscriptionUserDTO addUser(Long subscriptionId, SubscriptionUserDTO dto) {
 
-    //todo Remover usuário de uma subscription
-    public void removeUser (Long userid, Long subsid){
-        subscriptionUserRepository.deleteById(userid);
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(dto.getUserId()));
+
+        if (subscriptionUserRepository.existsBySubscriptionAndUser(subscription, user)) {
+            throw new RuntimeException("Usuário já está na subscription");
+        }
+
+        long count = subscriptionUserRepository.countBySubscription(subscription);
+        if (count >= subscription.getCapacity()) {
+            throw new RuntimeException("Capacidade máxima atingida");
+        }
+
+        SubscriptionUser subscriptionUser =
+                new SubscriptionUser(user, subscription, dto.getRole());
+
+        SubscriptionUser saved = subscriptionUserRepository.save(subscriptionUser);
+
+        return toResponseDTO(saved);
     }
-
-    //todo Adicionar usuário a uma subscription
-
 
     //todo Listar usuários de uma subscription
     public List<SubscriptionUserDTO> findAll() {
@@ -45,12 +71,45 @@ public class SubscriptionUserService {
         //com steam - return userRepository.findAll().stream().map(this::toResponseDTO).toList();
     }
 
+    public List<SubscriptionUserDTO> findUsersBySubscription(Long subscriptionId) {
+
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new RuntimeException("Subscription não encontrada"));
+
+        return subscriptionUserRepository.findBySubscription(subscription)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
+    //todo Remover usuário de uma subscription
+    //public void removeUser (Long userid, Long subsid){subscriptionUserRepository.deleteById(userid);}
+
+    @Transactional
+    public void removeUser(Long subscriptionId, Long userId) {
+
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new RuntimeException("Subscription não encontrada"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User não encontrado"));
+
+        SubscriptionUser subscriptionUser = subscriptionUserRepository
+                .findBySubscriptionAndUser(subscription, user)
+                .orElseThrow(() -> new RuntimeException("Vínculo não encontrado"));
+
+        subscriptionUserRepository.delete(subscriptionUser);
+    }
+
+
     private SubscriptionUserDTO toResponseDTO(SubscriptionUser subsUser) {
         SubscriptionUserDTO dto = new SubscriptionUserDTO();
         dto.setId(subsUser.getId());
+        dto.setUserId(subsUser.getUser().getId());
+        //dto.setSubscriptionId(subsUser.getSubscription().getId());
         dto.setRole(subsUser.getRole());
-        dto.setDate(subsUser.getDate());
-
+        dto.setDate(subsUser.getCreatedAt());
         return dto;
     }
+
 }

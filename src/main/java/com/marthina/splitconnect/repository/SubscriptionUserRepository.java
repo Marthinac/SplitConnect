@@ -6,10 +6,20 @@ import com.marthina.splitconnect.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUser, Long> {
-    Long user(User user);
+    // Verifica se o vínculo já existe
+    boolean existsBySubscriptionAndUser(Subscription subscription, User user);
 
-    //boolean existsBySubscriptionAndUser(Subscription subscription, User user);
-    //long countBySubscription(Subscription subscription);
+    // Conta quantos usuários estão na subscription
+    long countBySubscription(Subscription subscription);
+
+    // Lista todos os usuários de uma subscription
+    List<SubscriptionUser> findBySubscription(Subscription subscription);
+
+    // Busca o vínculo específico (para remoção)
+    Optional<SubscriptionUser> findBySubscriptionAndUser(Subscription subscription, User user);
 }
