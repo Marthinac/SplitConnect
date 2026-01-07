@@ -2,7 +2,6 @@ package com.marthina.splitconnect.controller;
 
 import com.marthina.splitconnect.dto.UserCreateDTO;
 import com.marthina.splitconnect.dto.UserResponseDTO;
-import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

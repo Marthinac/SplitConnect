@@ -1,7 +1,6 @@
 package com.marthina.splitconnect.controller;
 
 import com.marthina.splitconnect.dto.SubscriptionDTO;
-import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.service.SubscriptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
