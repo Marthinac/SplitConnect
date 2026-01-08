@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/subscriptionuser")
-//todo
+@RequestMapping("/subscriptions/{subscriptionId}/users")
 public class SubscriptionUserController {
 
     private final SubscriptionUserService subsUserService;
@@ -19,20 +18,31 @@ public class SubscriptionUserController {
         this.subsUserService = subsUserService;
     }
 
-    @PutMapping
-    public ResponseEntity<SubscriptionUserDTO> addUser (@RequestBody SubscriptionUserDTO dto){
-        SubscriptionUserDTO add = subsUserService.addUser(dto.getSubsId(), dto);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(add);
+    @PostMapping
+    public ResponseEntity<SubscriptionUserDTO> addUser(
+            @PathVariable Long subscriptionId,
+            @RequestBody SubscriptionUserDTO dto) {
+
+        SubscriptionUserDTO added =
+                subsUserService.addUser(subscriptionId, dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(added);
     }
 
     @GetMapping
-    public ResponseEntity<List<SubscriptionUserDTO>> findUsersBySubscription(@PathVariable Long subsid){
-        return ResponseEntity.ok(subsUserService.findUsersBySubscription(subsid));
+    public ResponseEntity<List<SubscriptionUserDTO>> findUsersBySubscription(@PathVariable Long subscriptionId) {
+        return ResponseEntity.ok(
+                subsUserService.findUsersBySubscription(subscriptionId)
+        );
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> removeUser(@PathVariable Long subsid, Long userid){
-        subsUserService.removeUser(subsid, userid);
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> removeUser(
+            @PathVariable Long subscriptionId,
+            @PathVariable Long userId) {
+
+        subsUserService.removeUser(subscriptionId, userId);
         return ResponseEntity.noContent().build();
     }
+
 }
