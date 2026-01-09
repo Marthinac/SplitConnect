@@ -1,12 +1,16 @@
 package com.marthina.splitconnect.service;
 
+import com.marthina.splitconnect.dto.ChangePasswordDTO;
 import com.marthina.splitconnect.dto.UserCreateDTO;
 import com.marthina.splitconnect.dto.UserResponseDTO;
 import com.marthina.splitconnect.exception.EmailAlreadyInUseException;
+import com.marthina.splitconnect.exception.InvalidPasswordException;
 import com.marthina.splitconnect.exception.UserNotFoundException;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +19,12 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponseDTO create(UserCreateDTO dto) {
@@ -29,7 +36,7 @@ public class UserService {
         user.setName(dto.getName());
         user.setCountry(dto.getCountry());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         User saved = userRepository.save(user);
 
@@ -63,7 +70,28 @@ public class UserService {
     }
 
     //todo public User updateEmail()
-    //todo public User updatePassword()
+
+    // retorn UserEntity for internal service (changePassword)
+    public User findEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordDTO dto) {
+
+        User user = findEntityById(userId);
+
+        //verify current password
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidPasswordException();
+        }
+
+        //save new password
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+
+        userRepository.save(user);
+    }
 
     public void delete(Long id) {
         userRepository.deleteById(id);
