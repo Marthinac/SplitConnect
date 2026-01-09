@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.service;
 
+import com.marthina.splitconnect.dto.ChangeEmailDTO;
 import com.marthina.splitconnect.dto.ChangePasswordDTO;
 import com.marthina.splitconnect.dto.UserCreateDTO;
 import com.marthina.splitconnect.dto.UserResponseDTO;
@@ -69,12 +70,24 @@ public class UserService {
         return toResponseDTO(userRepository.save(user));
     }
 
-    //todo public User updateEmail()
-
     // retorn UserEntity for internal service (changePassword)
     public User findEntityById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    //todo public User updateEmail()
+    @Transactional
+    public void changeEmail(Long userId, ChangeEmailDTO dto){
+
+        User user = findEntityById(userId);
+
+        if (userRepository.existsByEmail(dto.getNewEmail())){
+            throw new EmailAlreadyInUseException(dto.getNewEmail());
+        }
+
+        user.setEmail(dto.getNewEmail());
+        userRepository.save(user);
     }
 
     @Transactional

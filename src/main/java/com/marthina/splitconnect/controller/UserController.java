@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.controller;
 
+import com.marthina.splitconnect.dto.ChangeEmailDTO;
 import com.marthina.splitconnect.dto.ChangePasswordDTO;
 import com.marthina.splitconnect.dto.UserCreateDTO;
 import com.marthina.splitconnect.dto.UserResponseDTO;
@@ -42,8 +43,14 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id,@RequestBody ChangePasswordDTO dto) {
+    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO dto) {
         userService.changePassword(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/email")
+    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody ChangeEmailDTO dto) {
+        userService.changeEmail(id, dto);
         return ResponseEntity.noContent().build();
     }
 
