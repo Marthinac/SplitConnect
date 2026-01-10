@@ -24,7 +24,7 @@ public class UserCreateDTO {
     @Size(min = 8)
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).+$",
-            message = "Password must contain at least 8 chars, uppercase, lowercase, number, and special character"
+            message = "Password must contain at least 8 chars, uppercase, lowercase, number, and special character."
     )
     private String password;
 }
