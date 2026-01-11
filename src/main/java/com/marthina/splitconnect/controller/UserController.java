@@ -44,13 +44,13 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody ChangePasswordDTO dto) {
+    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody @Valid ChangePasswordDTO dto) {
         userService.changePassword(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/email")
-    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody ChangeEmailDTO dto) {
+    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody @Valid ChangeEmailDTO dto) {
         userService.changeEmail(id, dto);
         return ResponseEntity.noContent().build();
     }
