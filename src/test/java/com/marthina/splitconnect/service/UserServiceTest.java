@@ -80,7 +80,6 @@ class UserServiceTest {
     @Test
     void shouldChangePasswordSuccessfully() {
 
-        // Arrange
         ChangePasswordDTO dto = new ChangePasswordDTO();
         dto.setCurrentPassword("old");
         dto.setNewPassword("new");

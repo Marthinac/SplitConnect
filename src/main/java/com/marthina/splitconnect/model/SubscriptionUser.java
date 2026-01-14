@@ -24,13 +24,14 @@ public class SubscriptionUser {
     @JoinColumn(name = "subs_id")
     private Subscription subscription;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private SubscriptionRole role;
     private LocalDate createdAt;
 
     protected SubscriptionUser() {
     }
 
-    public SubscriptionUser(User user, Subscription subscription, String role) {
+    public SubscriptionUser(User user, Subscription subscription, SubscriptionRole role) {
         this.user = user;
         this.subscription = subscription;
         this.role = role;

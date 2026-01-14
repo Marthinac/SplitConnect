@@ -1,6 +1,7 @@
 package com.marthina.splitconnect.repository;
 
 import com.marthina.splitconnect.model.Subscription;
+import com.marthina.splitconnect.model.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,9 @@ import java.util.Optional;
 public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUser, Long> {
     // Verifica se o vínculo já existe
     boolean existsBySubscriptionAndUser(Subscription subscription, User user);
+
+    // Verifica qual a role
+    boolean existsBySubscriptionAndRole(Subscription subscription, SubscriptionRole role);
 
     // Conta quantos usuários estão na subscription
     long countBySubscription(Subscription subscription);

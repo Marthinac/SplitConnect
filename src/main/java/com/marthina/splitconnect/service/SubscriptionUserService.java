@@ -3,6 +3,7 @@ package com.marthina.splitconnect.service;
 import com.marthina.splitconnect.dto.SubscriptionUserDTO;
 import com.marthina.splitconnect.exception.*;
 import com.marthina.splitconnect.model.Subscription;
+import com.marthina.splitconnect.model.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
@@ -39,6 +40,14 @@ public class SubscriptionUserService {
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(dto.getUserId()));
+
+        //todo exception
+        if (dto.getRole() == SubscriptionRole.OWNER) {
+            boolean ownerExists = subscriptionUserRepository.existsBySubscriptionAndRole(subscription, SubscriptionRole.OWNER);
+            if (ownerExists) {
+                throw new RuntimeException("Já existe um OWNER nesta subscription");
+            }
+        }
 
         if (subscriptionUserRepository.existsBySubscriptionAndUser(subscription, user)) {
             throw new UserAlreadyInSubscriptionException(subscription, user);
@@ -80,9 +89,15 @@ public class SubscriptionUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
+        //precisa ser id? .findBySubscriptionidAndUserid
         SubscriptionUser subscriptionUser = subscriptionUserRepository
                 .findBySubscriptionAndUser(subscription, user)
                 .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, userId));
+
+        //todo exception
+        if (subscriptionUser.getRole() == SubscriptionRole.OWNER) {
+            throw new RuntimeException("OWNER can't be removed.");
+        }
 
         subscriptionUserRepository.delete(subscriptionUser);
     }

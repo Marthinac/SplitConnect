@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.dto;
 
+import com.marthina.splitconnect.model.SubscriptionRole;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,6 @@ public class SubscriptionUserDTO {
     private Long userId;
     private Long subsId;
 
-    private String role;
+    private SubscriptionRole role;
     private LocalDate date;
 }
