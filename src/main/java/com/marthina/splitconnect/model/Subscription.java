@@ -1,5 +1,7 @@
 package com.marthina.splitconnect.model;
 
+import com.marthina.splitconnect.model.enums.Country;
+import com.marthina.splitconnect.model.enums.Currency;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,11 +19,16 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private Country country;
     private BigDecimal amount;
+
+    @Transient
+    private String currency;
+
     private Integer capacity;
     private LocalDate dateStart;
     private LocalDate dateEnd;
-    private String country;
 
     @ManyToOne
     @JoinColumn(name = "id_service")

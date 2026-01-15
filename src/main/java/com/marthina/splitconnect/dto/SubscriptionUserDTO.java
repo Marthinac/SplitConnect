@@ -1,6 +1,6 @@
 package com.marthina.splitconnect.dto;
 
-import com.marthina.splitconnect.model.SubscriptionRole;
+import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import lombok.Getter;
 import lombok.Setter;
 

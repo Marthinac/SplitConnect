@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.model;
 
+import com.marthina.splitconnect.model.enums.ServicesType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,4 +16,7 @@ public class Services {
     private Long id;
 
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private ServicesType type;
 }

@@ -50,7 +50,7 @@ public class UserService {
     }
 
     public List<UserResponseDTO> findAll() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAllByOrderByIdAsc();
         List<UserResponseDTO> response = new ArrayList<>();
 
         for (User user : users) {
@@ -58,7 +58,7 @@ public class UserService {
         }
 
         return response;
-        //com steam - return userRepository.findAll().stream().map(this::toResponseDTO).toList();
+        //com steam - return userRepository.findAllByOrderByIdAsc().stream().map(this::toResponseDTO).toList();
     }
 
     public UserResponseDTO update(Long id, UserCreateDTO dto) {
@@ -107,6 +107,8 @@ public class UserService {
     }
 
     public void delete(Long id) {
+        if (!userRepository.existsById(id)) throw new UserNotFoundException(id);
+
         userRepository.deleteById(id);
     }
 

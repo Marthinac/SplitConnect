@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.model;
 
+import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,9 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "subscription_user")
+@Table( name = "subscription_user",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "subs_id"})},
+        indexes = {@Index(name = "idx_subscription_id", columnList = "subs_id")})
 public class SubscriptionUser {
 
     @Id

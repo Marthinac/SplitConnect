@@ -1,4 +1,4 @@
-package com.marthina.splitconnect.model;
+package com.marthina.splitconnect.model.enums;
 
 public enum SubscriptionRole {
     OWNER,

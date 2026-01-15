@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.marthina.splitconnect.model.CurrencyUtils.getCurrencyByCountry;
+
 @Service
 public class SubscriptionService {
 
@@ -26,16 +28,28 @@ public class SubscriptionService {
 
     public SubscriptionDTO create(SubscriptionDTO dto) {
 
-        Services services = servicesRepository.findById(dto.getServiceId())
-                .orElseThrow(() -> new ServiceNotFoundException(dto.getServiceId()));
+        // Criar ou buscar o serviço automaticamente
+        Services service;
+        if (dto.getServiceId() != null) {
+            // Se o ID foi enviado, tenta buscar
+            service = servicesRepository.findById(dto.getServiceId())
+                    .orElseThrow(() -> new ServiceNotFoundException(dto.getServiceId()));
+        } else {
+            // Se não enviou ID, cria um novo serviço com nome e tipo
+            service = new Services();
+            service.setName(dto.getServiceName());       // ex: "Amazon Prime"
+            service.setType(dto.getServiceType());       // enum: MOVIES, STREAMING...
+            service = servicesRepository.save(service);
+        }
 
         Subscription subscription = new Subscription();
-        subscription.setService(services);
+        subscription.setService(service);
+        subscription.setCountry(dto.getCountry());
         subscription.setAmount(dto.getAmount());
         subscription.setDateStart(dto.getDateStart());
         subscription.setDateEnd(dto.getDateEnd());
         subscription.setCapacity(dto.getCapacity());
-        subscription.setCountry(dto.getCountry());
+
 
         Subscription saved = subsRepository.save(subscription);
 
@@ -73,15 +87,18 @@ public class SubscriptionService {
         subsRepository.deleteById(id);
     }
 
-    private SubscriptionDTO toDTO(Subscription s) {
+    private SubscriptionDTO toDTO(Subscription subscription) {
         SubscriptionDTO dto = new SubscriptionDTO();
-        dto.setId(s.getId());
-        dto.setServiceId(s.getService().getId());
-        dto.setAmount(s.getAmount());
-        dto.setDateStart(s.getDateStart());
-        dto.setDateEnd(s.getDateEnd());
-        dto.setCapacity(s.getCapacity());
-        dto.setCountry(s.getCountry());
+        dto.setId(subscription.getId());
+        dto.setServiceId(subscription.getService().getId());
+        dto.setServiceName(subscription.getService().getName());
+        dto.setServiceType(subscription.getService().getType());
+        dto.setAmount(subscription.getAmount());
+        dto.setCountry(subscription.getCountry());
+        dto.setCurrency(getCurrencyByCountry(subscription.getCountry()));
+        dto.setDateStart(subscription.getDateStart());
+        dto.setDateEnd(subscription.getDateEnd());
+        dto.setCapacity(subscription.getCapacity());
         return dto;
     }
 }

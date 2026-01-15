@@ -3,7 +3,7 @@ package com.marthina.splitconnect.service;
 import com.marthina.splitconnect.dto.SubscriptionUserDTO;
 import com.marthina.splitconnect.exception.*;
 import com.marthina.splitconnect.model.Subscription;
-import com.marthina.splitconnect.model.SubscriptionRole;
+import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
@@ -45,8 +45,12 @@ public class SubscriptionUserService {
         if (dto.getRole() == SubscriptionRole.OWNER) {
             boolean ownerExists = subscriptionUserRepository.existsBySubscriptionAndRole(subscription, SubscriptionRole.OWNER);
             if (ownerExists) {
-                throw new RuntimeException("Já existe um OWNER nesta subscription");
+                throw new RuntimeException("There's already an OWNER for this subscription");
             }
+        }
+
+        if (subscription.getCapacity() == subscriptionUserRepository.countBySubscription(subscription)) {
+            throw new RuntimeException("The limit capacity for this subscription is already reached.");
         }
 
         if (subscriptionUserRepository.existsBySubscriptionAndUser(subscription, user)) {
@@ -79,27 +83,37 @@ public class SubscriptionUserService {
                 .toList();
     }
 
-    //removes a user from a subscription
+    //removes a user from a subscription actionUserId - who wants to remove | targetUserId - who will be removed
     @Transactional
-    public void removeUser(Long subscriptionId, Long userId) {
+    public void removeUser(Long subscriptionId, Long actionUserId, Long targetUserId ) {
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        User actionUser = userRepository.findById(actionUserId)
+                .orElseThrow(() -> new UserNotFoundException(actionUserId));
 
-        //precisa ser id? .findBySubscriptionidAndUserid
-        SubscriptionUser subscriptionUser = subscriptionUserRepository
-                .findBySubscriptionAndUser(subscription, user)
-                .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, userId));
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new UserNotFoundException(targetUserId));
+
+        SubscriptionUser actionSubsUser = subscriptionUserRepository
+                .findBySubscriptionAndUser(subscription, actionUser)
+                .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, actionUserId));
+
+        SubscriptionUser targetSubsUser = subscriptionUserRepository
+                .findBySubscriptionAndUser(subscription, targetUser)
+                .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, targetUserId));
+
+        if (actionSubsUser.getRole() != SubscriptionRole.OWNER) {
+            throw new RuntimeException("Only OWNER can remove members");
+        }
 
         //todo exception
-        if (subscriptionUser.getRole() == SubscriptionRole.OWNER) {
+        if (targetSubsUser.getRole() == SubscriptionRole.OWNER) {
             throw new RuntimeException("OWNER can't be removed.");
         }
 
-        subscriptionUserRepository.delete(subscriptionUser);
+        subscriptionUserRepository.delete(targetSubsUser);
     }
 
 

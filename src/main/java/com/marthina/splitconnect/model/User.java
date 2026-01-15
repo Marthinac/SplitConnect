@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.model;
 
+import com.marthina.splitconnect.model.enums.Country;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -18,7 +19,9 @@ public class User {
     private Long id;
 
     private String name;
-    private String country;
+
+    @Enumerated(EnumType.STRING)
+    private Country country;
 
     @Column(unique = true, nullable = false)
     private String email;

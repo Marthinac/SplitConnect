@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/subscriptions/{subscriptionId}/users")
+@RequestMapping("/subscription/{subscriptionId}/users")
 public class SubscriptionUserController {
 
     private final SubscriptionUserService subsUserService;
@@ -36,12 +36,13 @@ public class SubscriptionUserController {
         );
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{targetUserId}")
     public ResponseEntity<Void> removeUser(
             @PathVariable Long subscriptionId,
-            @PathVariable Long userId) {
+            @PathVariable Long actionUserId,
+            @PathVariable Long targetUserId) {
 
-        subsUserService.removeUser(subscriptionId, userId);
+        subsUserService.removeUser(subscriptionId, actionUserId, targetUserId);
         return ResponseEntity.noContent().build();
     }
 

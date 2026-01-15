@@ -1,7 +1,7 @@
 package com.marthina.splitconnect.repository;
 
 import com.marthina.splitconnect.model.Subscription;
-import com.marthina.splitconnect.model.SubscriptionRole;
+import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

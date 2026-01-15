@@ -1,5 +1,6 @@
 package com.marthina.splitconnect.dto;
 
+import com.marthina.splitconnect.model.enums.Country;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -14,7 +15,7 @@ public class UserCreateDTO {
     @NotBlank
     private String name;
     @NotBlank
-    private String country;
+    private Country country;
 
     @NotBlank
     @Email(message = "Invalid email")
