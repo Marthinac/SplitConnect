@@ -1,6 +1,7 @@
 package com.marthina.splitconnect.dto;
 
 import com.marthina.splitconnect.model.enums.Country;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 

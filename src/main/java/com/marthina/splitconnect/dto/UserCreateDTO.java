@@ -1,10 +1,7 @@
 package com.marthina.splitconnect.dto;
 
 import com.marthina.splitconnect.model.enums.Country;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +11,7 @@ public class UserCreateDTO {
 
     @NotBlank
     private String name;
-    @NotBlank
+    @NotNull
     private Country country;
 
     @NotBlank

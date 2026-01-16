@@ -24,7 +24,8 @@ public class Subscription {
     private BigDecimal amount;
 
     @Transient
-    private String currency;
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 
     private Integer capacity;
     private LocalDate dateStart;

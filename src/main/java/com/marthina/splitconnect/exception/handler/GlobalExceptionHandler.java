@@ -1,12 +1,18 @@
 package com.marthina.splitconnect.exception.handler;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.marthina.splitconnect.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -94,6 +100,42 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         return buildError(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        Throwable rootCause = ex.getMostSpecificCause();
+
+        if (rootCause instanceof InvalidFormatException ife
+                && ife.getTargetType().isEnum()) {
+
+            String fieldName = ife.getPath().stream()
+                    .map(JsonMappingException.Reference::getFieldName)
+                    .findFirst()
+                    .orElse("unknown");
+
+            String invalidValue = String.valueOf(ife.getValue());
+
+            String acceptedValues = Arrays.stream(ife.getTargetType().getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+
+            return buildError(
+                    HttpStatus.BAD_REQUEST,
+                    "Value invalid to the field '" + fieldName + "': " + invalidValue +
+                            ". Value accepted: " + acceptedValues,
+                    request
+            );
+        }
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "Error to process JSON",
+                request
+        );
     }
 
     //Helper
