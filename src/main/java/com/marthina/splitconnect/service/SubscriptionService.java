@@ -3,11 +3,18 @@ package com.marthina.splitconnect.service;
 import com.marthina.splitconnect.dto.SubscriptionDTO;
 import com.marthina.splitconnect.exception.ServiceNotFoundException;
 import com.marthina.splitconnect.exception.SubscriptionNotFoundException;
+import com.marthina.splitconnect.exception.UserNotFoundException;
 import com.marthina.splitconnect.model.Services;
 import com.marthina.splitconnect.model.Subscription;
+import com.marthina.splitconnect.model.SubscriptionUser;
+import com.marthina.splitconnect.model.User;
+import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
+import com.marthina.splitconnect.repository.SubscriptionUserRepository;
+import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +26,21 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subsRepository;
     private final ServicesRepository servicesRepository;
+    private final UserRepository userRepository;
+    private final SubscriptionUserRepository subscriptionUserRepository;
 
     public SubscriptionService(SubscriptionRepository subsRepository,
-                               ServicesRepository servicesRepository) {
+                               ServicesRepository servicesRepository,
+                               UserRepository userRepository,
+                               SubscriptionUserRepository subscriptionUserRepository) {
         this.subsRepository = subsRepository;
         this.servicesRepository = servicesRepository;
+        this.userRepository = userRepository;
+        this.subscriptionUserRepository = subscriptionUserRepository;
     }
 
-    public SubscriptionDTO create(SubscriptionDTO dto) {
+    @Transactional
+    public SubscriptionDTO create(Long ownerUserId, SubscriptionDTO dto) {
 
         // Criar ou buscar o serviço automaticamente
         Services service;
@@ -52,6 +66,18 @@ public class SubscriptionService {
 
 
         Subscription saved = subsRepository.save(subscription);
+
+        User owner = userRepository.findById(ownerUserId)
+                .orElseThrow(() -> new UserNotFoundException(ownerUserId));
+
+        SubscriptionUser ownerLink = new SubscriptionUser(
+                owner,
+                subscription,
+                SubscriptionRole.OWNER
+        );
+
+        subscriptionUserRepository.save(ownerLink);
+
 
         return toDTO(saved);
     }

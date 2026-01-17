@@ -1,9 +1,11 @@
 package com.marthina.splitconnect.controller;
 
 import com.marthina.splitconnect.dto.SubscriptionDTO;
+import com.marthina.splitconnect.security.auth.UserPrincipal;
 import com.marthina.splitconnect.service.SubscriptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +21,8 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubscriptionDTO> create (@RequestBody SubscriptionDTO dto) {
-        SubscriptionDTO created = subsService.create(dto);
+    public ResponseEntity<SubscriptionDTO> create (@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody SubscriptionDTO dto) {
+        SubscriptionDTO created = subsService.create(userPrincipal.getId(), dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

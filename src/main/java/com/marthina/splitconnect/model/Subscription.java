@@ -31,6 +31,10 @@ public class Subscription {
     private LocalDate dateStart;
     private LocalDate dateEnd;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
     @ManyToOne
     @JoinColumn(name = "id_service")
     private Services service;

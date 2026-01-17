@@ -4,32 +4,38 @@ import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.LocalDateTime;
 
-import java.time.LocalDate;
 
+@Table(
+        name = "subscription_user",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "subs_id"})},
+        indexes = {
+                @Index(name = "idx_subscription_id", columnList = "subs_id"),
+                @Index(name = "idx_subscription_role", columnList = "subs_id, role")})
 @Getter
 @Setter
 @Entity
-@Table( name = "subscription_user",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "subs_id"})},
-        indexes = {@Index(name = "idx_subscription_id", columnList = "subs_id")})
 public class SubscriptionUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "subs_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "subs_id", nullable = false)
     private Subscription subscription;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SubscriptionRole role;
-    private LocalDate createdAt;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     protected SubscriptionUser() {
     }
@@ -38,7 +44,10 @@ public class SubscriptionUser {
         this.user = user;
         this.subscription = subscription;
         this.role = role;
-        this.createdAt = LocalDate.now();
     }
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
