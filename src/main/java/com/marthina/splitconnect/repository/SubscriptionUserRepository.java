@@ -21,9 +21,17 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
     // Conta quantos usuários estão na subscription
     long countBySubscription(Subscription subscription);
 
+    //todo count para validar capacidade antes de permitir novos participantes.
+    //int countBySubscriptionAndActiveTrue(Subscription subscription);
+
     // Lista todos os usuários de uma subscription
     List<SubscriptionUser> findBySubscription(Subscription subscription);
 
     // Busca o vínculo específico (para remoção)
     Optional<SubscriptionUser> findBySubscriptionAndUser(Subscription subscription, User user);
+    Optional<SubscriptionUser> findBySubscriptionIdAndUserId(Long subsId, Long userId);
+
+    //todo when status active
+    //List<SubscriptionUser> findBySubscriptionIdAndActiveTrue(Long subscriptionId);
+
 }

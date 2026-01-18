@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ServicesRepository extends JpaRepository<Services, Long> {
+    //todo Em ServicesRepository, métodos de busca por nome (findByNameIgnoreCase) para evitar duplicatas.
 }
