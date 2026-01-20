@@ -9,6 +9,7 @@ import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.model.enums.SubscriptionRole;
+import com.marthina.splitconnect.model.enums.SubscriptionStatus;
 import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
@@ -16,6 +17,7 @@ import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +60,7 @@ public class SubscriptionService {
 
         Subscription subscription = new Subscription();
         subscription.setService(service);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setCountry(dto.getCountry());
         subscription.setAmount(dto.getAmount());
         subscription.setDateStart(dto.getDateStart());
@@ -83,8 +86,10 @@ public class SubscriptionService {
     }
 
     public SubscriptionDTO findById(Long id) {
-        return toDTO(subsRepository.findById(id)
-                .orElseThrow(() -> new SubscriptionNotFoundException(id)));
+        Subscription subscription = subsRepository.findById(id)
+                .orElseThrow(() -> new SubscriptionNotFoundException(id));
+        checkAndExpire(subscription);
+        return toDTO(subscription);
     }
 
     public List<SubscriptionDTO> findAll() {
@@ -92,11 +97,21 @@ public class SubscriptionService {
         List<SubscriptionDTO> response = new ArrayList<>();
 
         for (Subscription subscription : subscriptions) {
-            response.add(toDTO(subscription));
+            checkAndExpire(subscription);
+            subsRepository.save(subscription);
+            if (subscription.getStatus() == SubscriptionStatus.ACTIVE) response.add(toDTO(subscription));
         }
 
         return response;
         //com steam - return subsRepository.findAll().stream().map(this::toDTO).toList();
+    }
+
+    public void checkAndExpire(Subscription subscription) {
+        if (subscription.getDateEnd() != null &&
+                subscription.getDateEnd().isBefore(LocalDate.now()) &&
+                subscription.getStatus() == SubscriptionStatus.ACTIVE) {
+            subscription.setStatus(SubscriptionStatus.EXPIRED);
+        }
     }
 
     public SubscriptionDTO update(Long id, SubscriptionDTO dto) {
@@ -109,8 +124,19 @@ public class SubscriptionService {
         return toDTO(subsRepository.save(existing));
     }
 
-    public void delete(Long id) {
-        subsRepository.deleteById(id);
+    public void cancel(Long id, Long ownerId) {
+        Subscription subscription = subsRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
+        // regra de autorização básica (dono)
+        if (!subscription.getOwner().getId().equals(ownerId)) {
+            throw new RuntimeException("You are not the owner of this subscription");
+        }
+
+        subscription = subsRepository.findByIdAndOwnerId(id, ownerId);
+
+        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subsRepository.save(subscription);
     }
 
     private SubscriptionDTO toDTO(Subscription subscription) {
@@ -119,12 +145,16 @@ public class SubscriptionService {
         dto.setServiceId(subscription.getService().getId());
         dto.setServiceName(subscription.getService().getName());
         dto.setServiceType(subscription.getService().getType());
+        dto.setStatus(subscription.getStatus());
         dto.setAmount(subscription.getAmount());
         dto.setCountry(subscription.getCountry());
         dto.setCurrency(getCurrencyByCountry(subscription.getCountry()));
         dto.setDateStart(subscription.getDateStart());
         dto.setDateEnd(subscription.getDateEnd());
         dto.setCapacity(subscription.getCapacity());
+        dto.setUsedSlots(subscriptionUserRepository.countBySubscriptionAndActiveTrue(subscription));
+        dto.setHasVacancy(dto.getUsedSlots() < subscription.getCapacity() &&
+                subscription.getStatus() == SubscriptionStatus.ACTIVE);
         return dto;
     }
 }

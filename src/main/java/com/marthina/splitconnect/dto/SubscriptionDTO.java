@@ -3,6 +3,7 @@ package com.marthina.splitconnect.dto;
 import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
 import com.marthina.splitconnect.model.enums.ServicesType;
+import com.marthina.splitconnect.model.enums.SubscriptionStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -31,6 +32,11 @@ public class SubscriptionDTO {
     private LocalDate dateEnd;
     @NotNull
     private Integer capacity;
+    private SubscriptionStatus status;
+
+    // campos úteis para "vaga disponível"
+    private Integer usedSlots; // número atual de participantes
+    private Boolean hasVacancy; // true se usedSlots < capacity && status == ACTIVE
 
 }
 

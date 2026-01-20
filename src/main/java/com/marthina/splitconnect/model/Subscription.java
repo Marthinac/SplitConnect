@@ -2,6 +2,7 @@ package com.marthina.splitconnect.model;
 
 import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
+import com.marthina.splitconnect.model.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,10 @@ public class Subscription {
     @Transient
     @Enumerated(EnumType.STRING)
     private Currency currency;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubscriptionStatus status = SubscriptionStatus.ACTIVE;
 
     private Integer capacity;
     private LocalDate dateStart;

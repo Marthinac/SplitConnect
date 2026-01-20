@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     // para operações que só o dono pode fazer
-    Optional<Subscription> findByIdAndOwnerId(Long id, Long ownerId);
+    Subscription findByIdAndOwnerId(Long id, Long ownerId);
 }

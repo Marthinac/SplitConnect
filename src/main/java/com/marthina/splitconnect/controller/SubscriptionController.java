@@ -41,9 +41,9 @@ public class SubscriptionController {
         return ResponseEntity.ok(subsService.update(id, dto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
-        subsService.delete(id);
+    @DeleteMapping("/{id}/{ownerId}")
+    public ResponseEntity<Void> cancel(@PathVariable Long id, @PathVariable Long ownerId){
+        subsService.cancel(id, ownerId);
         return ResponseEntity.noContent().build();
     }
 }

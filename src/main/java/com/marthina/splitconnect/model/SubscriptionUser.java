@@ -1,6 +1,7 @@
 package com.marthina.splitconnect.model;
 
 import com.marthina.splitconnect.model.enums.SubscriptionRole;
+import com.marthina.splitconnect.model.enums.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +37,12 @@ public class SubscriptionUser {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    private Boolean active;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SubscriptionStatus status = SubscriptionStatus.PENDING;
 
     protected SubscriptionUser() {
     }
