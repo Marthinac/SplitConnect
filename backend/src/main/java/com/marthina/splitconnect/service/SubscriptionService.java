@@ -1,6 +1,7 @@
 package com.marthina.splitconnect.service;
 
 import com.marthina.splitconnect.dto.SubscriptionDTO;
+import com.marthina.splitconnect.exception.NotSubscriptionOwnerException;
 import com.marthina.splitconnect.exception.ServiceNotFoundException;
 import com.marthina.splitconnect.exception.SubscriptionNotFoundException;
 import com.marthina.splitconnect.exception.UserNotFoundException;
@@ -58,6 +59,9 @@ public class SubscriptionService {
             service = servicesRepository.save(service);
         }
 
+        User owner = userRepository.findById(ownerUserId)
+                .orElseThrow(() -> new UserNotFoundException(ownerUserId));
+
         Subscription subscription = new Subscription();
         subscription.setService(service);
         subscription.setStatus(SubscriptionStatus.ACTIVE);
@@ -66,12 +70,9 @@ public class SubscriptionService {
         subscription.setDateStart(dto.getDateStart());
         subscription.setDateEnd(dto.getDateEnd());
         subscription.setCapacity(dto.getCapacity());
-
+        subscription.setOwner(owner);
 
         Subscription saved = subsRepository.save(subscription);
-
-        User owner = userRepository.findById(ownerUserId)
-                .orElseThrow(() -> new UserNotFoundException(ownerUserId));
 
         SubscriptionUser ownerLink = new SubscriptionUser(
                 owner,
@@ -126,11 +127,11 @@ public class SubscriptionService {
 
     public void cancel(Long id, Long ownerId) {
         Subscription subscription = subsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+                .orElseThrow(() -> new SubscriptionNotFoundException(id));
 
         // regra de autorização básica (dono)
         if (!subscription.getOwner().getId().equals(ownerId)) {
-            throw new RuntimeException("You are not the owner of this subscription");
+            throw new NotSubscriptionOwnerException(subscription.getOwner().getId(), ownerId);
         }
 
         subscription = subsRepository.findByIdAndOwnerId(id, ownerId);

@@ -4,9 +4,11 @@ import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
+import com.marthina.splitconnect.model.enums.SubscriptionUserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +33,10 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
     Optional<SubscriptionUser> findBySubscriptionAndUser(Subscription subscription, User user);
     Optional<SubscriptionUser> findBySubscriptionIdAndUserId(Long subsId, Long userId);
 
-    //todo when status active
-    //List<SubscriptionUser> findBySubscriptionIdAndActiveTrue(Long subscriptionId);
+    Optional<SubscriptionUser> findByIdAndSubscriptionOwnerId(Long subscriptionUserId, Long ownerId);
+
+    long countBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
+
+    List<SubscriptionUser> findBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
 
 }

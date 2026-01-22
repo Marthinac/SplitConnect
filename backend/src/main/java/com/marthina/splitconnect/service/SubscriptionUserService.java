@@ -7,6 +7,7 @@ import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.model.enums.SubscriptionStatus;
+import com.marthina.splitconnect.model.enums.SubscriptionUserStatus;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
 import com.marthina.splitconnect.repository.UserRepository;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 //Gerenciar o vínculo entre usuários e assinaturas, garantindo regras como: não ultrapassar a capacidade
 //não permitir usuários duplicados, definir papéis (OWNER, MEMBER), centralizar toda a lógica dessa relação
@@ -37,34 +37,86 @@ public class SubscriptionUserService {
         this.subscriptionService = subscriptionService;
     }
 
-    //TODO STATUS
-    /*
-    {
-        public SubscriptionUserDTO requestJoin (Long subscriptionId, Long userId){
-        // mesmas validações (ativa, vaga, não duplicado)
+    public SubscriptionUserDTO requestJoin (Long subscriptionId, Long userId){
+
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        subscriptionService.checkAndExpire(subscription);
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
+            throw new SubscriptionNotActiveException(subscriptionId);
+        }
+
+        if (subscriptionUserRepository.existsBySubscriptionAndUser(subscription, user)) {
+            throw new UserAlreadyInSubscriptionException(subscription, user);
+        }
+
+        long approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
+        if (approvedCount >= subscription.getCapacity()) {
+            throw new MaximumCapacityException(subscription);
+        }
 
         SubscriptionUser subsUser = new SubscriptionUser(user, subscription, SubscriptionRole.MEMBER);
-        subsUser.setStatus(SubscriptionStatus.PENDING); // pedido pendente
+        subsUser.setStatus(SubscriptionUserStatus.PENDING);
         SubscriptionUser saved = subscriptionUserRepository.save(subsUser);
+
         return toResponseDTO(saved);
     }
 
-        public SubscriptionUserDTO approveJoin (Long subscriptionUserId, Long ownerId){
-        SubscriptionUser subsUser = subscriptionUserRepository.findById(subscriptionUserId).orElseThrow();
-        Subscription subscription = subsUser.getSubscription();
+    public SubscriptionUserDTO approveJoin (Long subscriptionUserId, Long ownerId){
 
-        if (!subscription.getOwner().getId().equals(ownerId)) {
-            throw new RuntimeException("Only owner can approve");
+        SubscriptionUser subsUser = subscriptionUserRepository.findByIdAndSubscriptionOwnerId(subscriptionUserId, ownerId)
+                .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionUserId, ownerId));
+
+        if (subsUser.getStatus() != SubscriptionUserStatus.PENDING) {
+            throw new AlreadyProcessedJoinRequestException(subscriptionUserId);
+        }
+
+        long approvedCount = subscriptionUserRepository
+                .countBySubscriptionAndStatus(subsUser.getSubscription(), SubscriptionUserStatus.APPROVED);
+        if (approvedCount >= subsUser.getSubscription().getCapacity()) {
+            throw new MaximumCapacityException(subsUser.getSubscription());
         }
 
         subsUser.setStatus(SubscriptionUserStatus.APPROVED);
-        return toResponseDTO(subsUserRepository.save(subsUser));
+        return toResponseDTO(subscriptionUserRepository.save(subsUser));
     }
-    */
 
-    //add user in a subscription
+    public SubscriptionUserDTO rejectJoin (Long subscriptionUserId, Long ownerId){
+
+        SubscriptionUser subsUser = subscriptionUserRepository.findByIdAndSubscriptionOwnerId(subscriptionUserId, ownerId)
+                .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionUserId, ownerId));
+
+        if (subsUser.getStatus() != SubscriptionUserStatus.PENDING) {
+            throw new AlreadyProcessedJoinRequestException(subscriptionUserId);
+        }
+
+        subsUser.setStatus(SubscriptionUserStatus.REJECTED);
+        return toResponseDTO(subscriptionUserRepository.save(subsUser));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubscriptionUserDTO> listPendingRequests(Long subscriptionId, Long ownerId) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+
+        if (!subscription.getOwner().getId().equals(ownerId)) {
+            throw new NotSubscriptionOwnerException(subscription.getOwner().getId(), ownerId);
+        }
+
+        return subscriptionUserRepository
+                .findBySubscriptionAndStatus(subscription, SubscriptionUserStatus.PENDING)
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
+    //add user in a subscription (owner creating the subs., owner inviting frinds to subs., admin add member)
     @Transactional
-    public SubscriptionUserDTO addUser(Long subscriptionId, SubscriptionUserDTO dto) {
+    public SubscriptionUserDTO addDirectUser(Long subscriptionId, SubscriptionUserDTO dto) {
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
@@ -72,11 +124,10 @@ public class SubscriptionUserService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(dto.getUserId()));
 
-        //todo exception
         if (dto.getRole() == SubscriptionRole.OWNER) {
             boolean ownerExists = subscriptionUserRepository.existsBySubscriptionAndRole(subscription, SubscriptionRole.OWNER);
             if (ownerExists) {
-                throw new RuntimeException("There's already an OWNER for this subscription");
+                throw new OwnerAlreadyExistsException(subscriptionId);
             }
         }
 
@@ -84,28 +135,23 @@ public class SubscriptionUserService {
         subscriptionRepository.save(subscription);
 
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new RuntimeException("Subscription is not active");
+            throw new SubscriptionNotActiveException(subscriptionId);
         }
 
-        long usedSlots = subscriptionUserRepository.countBySubscription(subscription);
-        if (usedSlots >= subscription.getCapacity()) {
-            throw new RuntimeException("No vacancies available. The limit capacity for this subscription is already reached.");
+        long approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
+        if (approvedCount >= subscription.getCapacity()) {
+            throw new MaximumCapacityException(subscription);
         }
 
         if (subscriptionUserRepository.existsBySubscriptionAndUser(subscription, user)) {
             throw new UserAlreadyInSubscriptionException(subscription, user);
         }
 
-        long count = subscriptionUserRepository.countBySubscription(subscription);
-        if (count >= subscription.getCapacity()) {
-            throw new MaximumCapacityException(subscription);
-        }
-
         SubscriptionUser subscriptionUser =
                 new SubscriptionUser(user, subscription, dto.getRole());
 
+        subscriptionUser.setStatus(SubscriptionUserStatus.APPROVED);
         SubscriptionUser saved = subscriptionUserRepository.save(subscriptionUser);
-
         return toResponseDTO(saved);
     }
 
@@ -144,12 +190,10 @@ public class SubscriptionUserService {
                 .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, targetUserId));
 
         if (actionSubsUser.getRole() != SubscriptionRole.OWNER) {
-            throw new RuntimeException("Only OWNER can remove members");
-        }
+            throw new OnlyOwnerCanRemoveMemberException(actionSubsUser.getRole());}
 
-        //todo exception
         if (targetSubsUser.getRole() == SubscriptionRole.OWNER) {
-            throw new RuntimeException("OWNER can't be removed.");
+            throw new OwnerCannotBeRemovedException(targetSubsUser.getRole());
         }
 
         subscriptionUserRepository.delete(targetSubsUser);
@@ -161,11 +205,13 @@ public class SubscriptionUserService {
         dto.setId(subsUser.getId());
         dto.setUserId(subsUser.getUser().getId());
         dto.setSubsId(subsUser.getSubscription().getId());
+        dto.setStatus(subsUser.getStatus());
         dto.setRole(subsUser.getRole());
         dto.setDate(subsUser.getCreatedAt());
-        dto.setActive(subsUser.getActive() != null ? subsUser.getActive() : true);
+        dto.setActive(subsUser.isActive());
         dto.setSubscriptionStatus(subsUser.getSubscription().getStatus());
         return dto;
     }
+
 
 }
