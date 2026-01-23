@@ -30,6 +30,14 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 );
 
+        /* todo o de cima é apenas para testar postman
+
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/users").permitAll()           // create/findAll
+                .requestMatchers("/users/**").authenticated()    // id/password/email → só logado
+                .anyRequest().authenticated()
+        );
+        */
         return http.build();
     }
 }

@@ -4,8 +4,7 @@ import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
 import com.marthina.splitconnect.model.enums.ServicesType;
 import com.marthina.splitconnect.model.enums.SubscriptionStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,11 +25,11 @@ public class SubscriptionDTO {
     @NotNull
     private BigDecimal amount;
     private Currency currency;
-    @NotNull
+    @NotNull @FutureOrPresent
     private LocalDate dateStart;
-    @NotNull
+    @NotNull @Future
     private LocalDate dateEnd;
-    @NotNull
+    @NotNull @Min(1)
     private Integer capacity;
     private SubscriptionStatus status;
 

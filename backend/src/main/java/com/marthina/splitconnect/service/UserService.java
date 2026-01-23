@@ -28,6 +28,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public UserResponseDTO create(UserCreateDTO dto) {
         if (userRepository.existsByEmail(dto.getEmail())){
             throw new EmailAlreadyInUseException(dto.getEmail());
@@ -61,6 +62,7 @@ public class UserService {
         //com steam - return userRepository.findAllByOrderByIdAsc().stream().map(this::toResponseDTO).toList();
     }
 
+    @Transactional
     public UserResponseDTO update(Long id, UserCreateDTO dto) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
@@ -76,7 +78,6 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    //todo public User updateEmail()
     @Transactional
     public void changeEmail(Long userId, ChangeEmailDTO dto){
 
@@ -102,10 +103,10 @@ public class UserService {
 
         //save new password
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-
         userRepository.save(user);
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!userRepository.existsById(id)) throw new UserNotFoundException(id);
 

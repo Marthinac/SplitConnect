@@ -1,16 +1,14 @@
 package com.marthina.splitconnect.service;
 
 import com.marthina.splitconnect.dto.SubscriptionDTO;
-import com.marthina.splitconnect.exception.NotSubscriptionOwnerException;
-import com.marthina.splitconnect.exception.ServiceNotFoundException;
-import com.marthina.splitconnect.exception.SubscriptionNotFoundException;
-import com.marthina.splitconnect.exception.UserNotFoundException;
+import com.marthina.splitconnect.exception.*;
 import com.marthina.splitconnect.model.Services;
 import com.marthina.splitconnect.model.Subscription;
 import com.marthina.splitconnect.model.SubscriptionUser;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.model.enums.SubscriptionRole;
 import com.marthina.splitconnect.model.enums.SubscriptionStatus;
+import com.marthina.splitconnect.model.enums.SubscriptionUserStatus;
 import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
@@ -18,6 +16,7 @@ import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +43,8 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionDTO create(Long ownerUserId, SubscriptionDTO dto) {
+
+        validateSubscriptionDTO(dto);
 
         // Criar ou buscar o serviço automaticamente
         Services service;
@@ -115,26 +116,42 @@ public class SubscriptionService {
         }
     }
 
+    @Transactional
     public SubscriptionDTO update(Long id, SubscriptionDTO dto) {
         Subscription existing = subsRepository.findById(id).orElseThrow(() -> new SubscriptionNotFoundException(id));
 
-        existing.setCountry(dto.getCountry());
-        existing.setDateEnd(dto.getDateEnd());
-        existing.setAmount(dto.getAmount());
+        if (dto.getCapacity() != null && dto.getCapacity() > 0) {
+            long currentApproved = subscriptionUserRepository
+                    .countBySubscriptionAndStatus(existing, SubscriptionUserStatus.APPROVED);
+            if (dto.getCapacity() < currentApproved) {
+                throw new CannotReduceCapacityException(existing.getCapacity(), dto.getCapacity());
+            }
+            existing.setCapacity(dto.getCapacity());
+        }
 
+        if (dto.getDateEnd() != null) {
+            if (dto.getDateEnd().isBefore(existing.getDateStart())) {
+                throw new InvalidSubscriptionDateRangeException(
+                        existing.getDateStart(), dto.getDateEnd());
+            }
+            existing.setDateEnd(dto.getDateEnd());
+        }
+
+        if (dto.getAmount() != null && dto.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+            existing.setAmount(dto.getAmount());
+        }
+
+        if (dto.getCountry() != null) {
+            existing.setCountry(dto.getCountry());
+        }
         return toDTO(subsRepository.save(existing));
     }
 
+    @Transactional
     public void cancel(Long id, Long ownerId) {
-        Subscription subscription = subsRepository.findById(id)
-                .orElseThrow(() -> new SubscriptionNotFoundException(id));
-
-        // regra de autorização básica (dono)
-        if (!subscription.getOwner().getId().equals(ownerId)) {
-            throw new NotSubscriptionOwnerException(subscription.getOwner().getId(), ownerId);
-        }
-
-        subscription = subsRepository.findByIdAndOwnerId(id, ownerId);
+        Subscription subscription = subsRepository
+                .findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(() -> new NotSubscriptionOwnerException(id, ownerId));
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
         subsRepository.save(subscription);
@@ -157,5 +174,32 @@ public class SubscriptionService {
         dto.setHasVacancy(dto.getUsedSlots() < subscription.getCapacity() &&
                 subscription.getStatus() == SubscriptionStatus.ACTIVE);
         return dto;
+    }
+
+    private void validateSubscriptionDTO(SubscriptionDTO dto) {
+        //capacity
+        if (dto.getCapacity() == null || dto.getCapacity() <= 0) {
+            throw new InvalidSubscriptionCapacityException(dto.getCapacity());
+        }
+
+        //amount
+        if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidSubscriptionAmountException(dto.getAmount());
+        }
+
+        //dates
+        if (dto.getDateStart() == null || dto.getDateEnd() == null) {
+            throw new InvalidSubscriptionDatesException();
+        }
+
+        if (dto.getDateEnd().isBefore(dto.getDateStart())) {
+            throw new InvalidSubscriptionDateRangeException(
+                    dto.getDateStart(), dto.getDateEnd());
+        }
+
+        //service name
+        if (dto.getServiceName() == null || dto.getServiceName().trim().isEmpty()) {
+            throw new InvalidServiceNameException();
+        }
     }
 }

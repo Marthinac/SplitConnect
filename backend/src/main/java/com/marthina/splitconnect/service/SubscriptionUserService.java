@@ -37,6 +37,7 @@ public class SubscriptionUserService {
         this.subscriptionService = subscriptionService;
     }
 
+    @Transactional
     public SubscriptionUserDTO requestJoin (Long subscriptionId, Long userId){
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
@@ -66,6 +67,7 @@ public class SubscriptionUserService {
         return toResponseDTO(saved);
     }
 
+    @Transactional
     public SubscriptionUserDTO approveJoin (Long subscriptionUserId, Long ownerId){
 
         SubscriptionUser subsUser = subscriptionUserRepository.findByIdAndSubscriptionOwnerId(subscriptionUserId, ownerId)
@@ -85,6 +87,7 @@ public class SubscriptionUserService {
         return toResponseDTO(subscriptionUserRepository.save(subsUser));
     }
 
+    @Transactional
     public SubscriptionUserDTO rejectJoin (Long subscriptionUserId, Long ownerId){
 
         SubscriptionUser subsUser = subscriptionUserRepository.findByIdAndSubscriptionOwnerId(subscriptionUserId, ownerId)

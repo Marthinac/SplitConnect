@@ -4,10 +4,13 @@ import com.marthina.splitconnect.dto.ChangeEmailDTO;
 import com.marthina.splitconnect.dto.ChangePasswordDTO;
 import com.marthina.splitconnect.dto.UserCreateDTO;
 import com.marthina.splitconnect.dto.UserResponseDTO;
+import com.marthina.splitconnect.exception.UserNotAuthorizedException;
+import com.marthina.splitconnect.security.auth.UserPrincipal;
 import com.marthina.splitconnect.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,13 +47,23 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody @Valid ChangePasswordDTO dto) {
+    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody @Valid ChangePasswordDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        if (!userPrincipal.getId().equals(id)) {
+            throw new UserNotAuthorizedException(id, userPrincipal.getId());
+        }
+
         userService.changePassword(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/email")
-    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody @Valid ChangeEmailDTO dto) {
+    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody @Valid ChangeEmailDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        if (!userPrincipal.getId().equals(id)) {
+            throw new UserNotAuthorizedException(id, userPrincipal.getId());
+        }
+
         userService.changeEmail(id, dto);
         return ResponseEntity.noContent().build();
     }
