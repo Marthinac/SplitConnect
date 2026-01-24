@@ -55,7 +55,7 @@ public class SubscriptionUserService {
             throw new UserAlreadyInSubscriptionException(subscription, user);
         }
 
-        long approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
+        int approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
         if (approvedCount >= subscription.getCapacity()) {
             throw new MaximumCapacityException(subscription);
         }
@@ -77,7 +77,7 @@ public class SubscriptionUserService {
             throw new AlreadyProcessedJoinRequestException(subscriptionUserId);
         }
 
-        long approvedCount = subscriptionUserRepository
+        int approvedCount = subscriptionUserRepository
                 .countBySubscriptionAndStatus(subsUser.getSubscription(), SubscriptionUserStatus.APPROVED);
         if (approvedCount >= subsUser.getSubscription().getCapacity()) {
             throw new MaximumCapacityException(subsUser.getSubscription());
@@ -141,7 +141,7 @@ public class SubscriptionUserService {
             throw new SubscriptionNotActiveException(subscriptionId);
         }
 
-        long approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
+        int approvedCount = subscriptionUserRepository.countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
         if (approvedCount >= subscription.getCapacity()) {
             throw new MaximumCapacityException(subscription);
         }

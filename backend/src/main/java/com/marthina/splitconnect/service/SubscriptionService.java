@@ -120,15 +120,20 @@ public class SubscriptionService {
     public SubscriptionDTO update(Long id, SubscriptionDTO dto) {
         Subscription existing = subsRepository.findById(id).orElseThrow(() -> new SubscriptionNotFoundException(id));
 
-        if (dto.getCapacity() != null && dto.getCapacity() > 0) {
-            long currentApproved = subscriptionUserRepository
+        // > 0 and bigger than approveds
+        if (dto.getCapacity() != null) {
+            if (dto.getCapacity() <= 0) {
+                throw new InvalidSubscriptionCapacityException(dto.getCapacity());
+            }
+            int approvedCount = subscriptionUserRepository
                     .countBySubscriptionAndStatus(existing, SubscriptionUserStatus.APPROVED);
-            if (dto.getCapacity() < currentApproved) {
+            if (dto.getCapacity() < approvedCount) {
                 throw new CannotReduceCapacityException(existing.getCapacity(), dto.getCapacity());
             }
             existing.setCapacity(dto.getCapacity());
         }
 
+        // dateEnd >= dateStart
         if (dto.getDateEnd() != null) {
             if (dto.getDateEnd().isBefore(existing.getDateStart())) {
                 throw new InvalidSubscriptionDateRangeException(
@@ -137,13 +142,18 @@ public class SubscriptionService {
             existing.setDateEnd(dto.getDateEnd());
         }
 
-        if (dto.getAmount() != null && dto.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+        // > 0
+        if (dto.getAmount() != null) {
+            if (dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new InvalidSubscriptionAmountException(dto.getAmount());
+            }
             existing.setAmount(dto.getAmount());
         }
 
         if (dto.getCountry() != null) {
             existing.setCountry(dto.getCountry());
         }
+
         return toDTO(subsRepository.save(existing));
     }
 
@@ -170,7 +180,8 @@ public class SubscriptionService {
         dto.setDateStart(subscription.getDateStart());
         dto.setDateEnd(subscription.getDateEnd());
         dto.setCapacity(subscription.getCapacity());
-        dto.setUsedSlots(subscriptionUserRepository.countBySubscriptionAndActiveTrue(subscription));
+        dto.setUsedSlots(subscriptionUserRepository.
+                countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED));
         dto.setHasVacancy(dto.getUsedSlots() < subscription.getCapacity() &&
                 subscription.getStatus() == SubscriptionStatus.ACTIVE);
         return dto;

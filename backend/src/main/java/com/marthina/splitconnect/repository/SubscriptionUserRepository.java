@@ -20,12 +20,6 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
     // Verifica qual a role
     boolean existsBySubscriptionAndRole(Subscription subscription, SubscriptionRole role);
 
-    // Conta quantos usuários estão na subscription
-    long countBySubscription(Subscription subscription);
-
-    // count para validar capacidade antes de permitir novos participantes.
-    int countBySubscriptionAndActiveTrue(Subscription subscription);
-
     // Lista todos os usuários de uma subscription
     List<SubscriptionUser> findBySubscription(Subscription subscription);
 
@@ -35,7 +29,7 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
 
     Optional<SubscriptionUser> findByIdAndSubscriptionOwnerId(Long subscriptionUserId, Long ownerId);
 
-    long countBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
+    int countBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
 
     List<SubscriptionUser> findBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
 
