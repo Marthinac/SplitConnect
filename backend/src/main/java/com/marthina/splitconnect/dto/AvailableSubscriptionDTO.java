@@ -1,6 +1,9 @@
 package com.marthina.splitconnect.dto;
 
+import com.marthina.splitconnect.model.enums.Country;
+import com.marthina.splitconnect.model.enums.Currency;
 import com.marthina.splitconnect.model.enums.SubscriptionStatus;
+import jdk.jshell.Snippet;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,10 +16,12 @@ public class AvailableSubscriptionDTO {
     private Long id;
     private String serviceName;
     private String ownerName;
-    private String country;
+    private Country country;
     private BigDecimal pricePerUser; // amount / capacity
+    private Currency currency;
     private Integer totalSlots;
     private Integer usedSlots;
     private Boolean hasVacancy;
     private SubscriptionStatus status;
+
 }

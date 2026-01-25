@@ -1,22 +1,22 @@
 package com.marthina.splitconnect.service;
 
+import com.marthina.splitconnect.dto.AvailableSubscriptionDTO;
 import com.marthina.splitconnect.dto.SubscriptionDTO;
 import com.marthina.splitconnect.exception.*;
-import com.marthina.splitconnect.model.Services;
-import com.marthina.splitconnect.model.Subscription;
-import com.marthina.splitconnect.model.SubscriptionUser;
-import com.marthina.splitconnect.model.User;
-import com.marthina.splitconnect.model.enums.SubscriptionRole;
-import com.marthina.splitconnect.model.enums.SubscriptionStatus;
-import com.marthina.splitconnect.model.enums.SubscriptionUserStatus;
+import com.marthina.splitconnect.model.*;
+import com.marthina.splitconnect.model.enums.*;
 import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
 import com.marthina.splitconnect.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,18 +94,57 @@ public class SubscriptionService {
         return toDTO(subscription);
     }
 
-    public List<SubscriptionDTO> findAll() {
-        List<Subscription> subscriptions = subsRepository.findAll();
+    @Transactional
+    public Page<SubscriptionDTO> findAll(Pageable pageable) {
+        Page<Subscription> subscriptionsPage = subsRepository.findAll(pageable);
         List<SubscriptionDTO> response = new ArrayList<>();
 
-        for (Subscription subscription : subscriptions) {
+        for (Subscription subscription : subscriptionsPage.getContent()) {
             checkAndExpire(subscription);
             subsRepository.save(subscription);
-            if (subscription.getStatus() == SubscriptionStatus.ACTIVE) response.add(toDTO(subscription));
+            if (subscription.getStatus() == SubscriptionStatus.ACTIVE) {
+                response.add(toDTO(subscription));
+            }
         }
 
-        return response;
-        //com steam - return subsRepository.findAll().stream().map(this::toDTO).toList();
+        return new PageImpl<>(response, pageable, subscriptionsPage.getTotalElements());
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<AvailableSubscriptionDTO> findAvailableSubscriptions(
+            Pageable pageable,
+            Country country,
+            ServicesType serviceType) {
+
+        return subsRepository.findAvailableSubscriptions(pageable, country, serviceType)
+                .map(this::toAvailableSubscriptionDTO);
+    }
+
+    private AvailableSubscriptionDTO toAvailableSubscriptionDTO(Subscription subscription) {
+        int usedSlots = subscriptionUserRepository
+                .countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED);
+
+        boolean hasVacancy = usedSlots < subscription.getCapacity()
+                && subscription.getStatus() == SubscriptionStatus.ACTIVE;
+
+        BigDecimal pricePerUser = subscription.getAmount()
+                .divide(BigDecimal.valueOf(subscription.getCapacity()), 2, RoundingMode.HALF_UP);
+
+        AvailableSubscriptionDTO dto = new AvailableSubscriptionDTO();
+        dto.setId(subscription.getId());
+        dto.setServiceName(subscription.getService().getName());
+        dto.setOwnerName(subscription.getOwner().getName());
+        dto.setCountry(subscription.getCountry());
+        dto.setPricePerUser(pricePerUser);
+        dto.setTotalSlots(subscription.getCapacity());
+        dto.setUsedSlots(usedSlots);
+        dto.setHasVacancy(hasVacancy);
+        dto.setStatus(subscription.getStatus());
+        dto.setCurrency(CurrencyUtils.getCurrencyByCountry(subscription.getCountry()));
+
+        return dto;
+
     }
 
     public void checkAndExpire(Subscription subscription) {

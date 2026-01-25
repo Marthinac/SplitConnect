@@ -1,9 +1,17 @@
 package com.marthina.splitconnect.controller;
 
+import com.marthina.splitconnect.dto.AvailableSubscriptionDTO;
 import com.marthina.splitconnect.dto.SubscriptionDTO;
+import com.marthina.splitconnect.model.enums.Country;
+import com.marthina.splitconnect.model.enums.ServicesType;
 import com.marthina.splitconnect.security.auth.UserPrincipal;
 import com.marthina.splitconnect.service.SubscriptionService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,8 +41,26 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SubscriptionDTO>> findAll() {
-        return ResponseEntity.ok(subsService.findAll());
+    public ResponseEntity<Page<SubscriptionDTO>> findAll(
+            @PageableDefault(size = 10, sort = "dateStart", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        return ResponseEntity.ok(subsService.findAll(pageable));
+    }
+
+
+    @GetMapping("/available")
+    public ResponseEntity<Page<AvailableSubscriptionDTO>> findAvailableSubscriptions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Country country,
+            @RequestParam(required = false) ServicesType serviceType) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<AvailableSubscriptionDTO> available = subsService.findAvailableSubscriptions(
+                pageable, country, serviceType);
+
+        return ResponseEntity.ok(available);
     }
 
     @PutMapping("/{id}")

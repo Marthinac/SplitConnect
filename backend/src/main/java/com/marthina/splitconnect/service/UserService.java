@@ -9,6 +9,8 @@ import com.marthina.splitconnect.exception.InvalidPasswordException;
 import com.marthina.splitconnect.exception.UserNotFoundException;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,17 +52,12 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id)));
     }
 
-    public List<UserResponseDTO> findAll() {
-        List<User> users = userRepository.findAllByOrderByIdAsc();
-        List<UserResponseDTO> response = new ArrayList<>();
-
-        for (User user : users) {
-            response.add(toResponseDTO(user));
-        }
-
-        return response;
-        //com steam - return userRepository.findAllByOrderByIdAsc().stream().map(this::toResponseDTO).toList();
+    @Transactional(readOnly = true)
+    public Page<UserResponseDTO> findAll(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(this::toResponseDTO);
     }
+
 
     @Transactional
     public UserResponseDTO update(Long id, UserCreateDTO dto) {
