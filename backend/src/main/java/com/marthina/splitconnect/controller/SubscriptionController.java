@@ -7,6 +7,7 @@ import com.marthina.splitconnect.model.enums.ServicesType;
 import com.marthina.splitconnect.security.auth.UserPrincipal;
 import com.marthina.splitconnect.service.SubscriptionService;
 import jakarta.validation.Valid;
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,9 +66,10 @@ public class SubscriptionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id, @RequestBody SubscriptionDTO dto){
-        return ResponseEntity.ok(subsService.update(id, dto));
-    }
+    public ResponseEntity<SubscriptionDTO> update(@PathVariable Long id,  @AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid SubscriptionDTO dto){
+        Long ownerId = userPrincipal.getId();
+        SubscriptionDTO result = subsService.update(id, ownerId, dto);
+        return ResponseEntity.ok(result);    }
 
     @DeleteMapping("/{id}/{ownerId}")
     public ResponseEntity<Void> cancel(@PathVariable Long id, @PathVariable Long ownerId){

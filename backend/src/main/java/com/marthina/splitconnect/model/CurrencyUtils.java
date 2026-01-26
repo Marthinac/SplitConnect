@@ -3,7 +3,11 @@ package com.marthina.splitconnect.model;
 import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class CurrencyUtils {
@@ -83,5 +87,11 @@ public class CurrencyUtils {
 
     public static Currency getCurrencyByCountry(Country country) {
         return COUNTRY_TO_CURRENCY.getOrDefault(country, Currency.OTHER);
+    }
+
+    public static String formatAmountPerPerson(BigDecimal amount, int capacity, Country country) {
+        BigDecimal perPerson = amount.divide(BigDecimal.valueOf(capacity), 2, RoundingMode.HALF_UP);
+        return NumberFormat.getCurrencyInstance(country.getLocale())
+                .format(perPerson);
     }
 }

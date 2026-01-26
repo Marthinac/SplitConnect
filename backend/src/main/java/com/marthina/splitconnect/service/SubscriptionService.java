@@ -156,8 +156,12 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public SubscriptionDTO update(Long id, SubscriptionDTO dto) {
+    public SubscriptionDTO update(Long id, Long ownerId, SubscriptionDTO dto) {
         Subscription existing = subsRepository.findById(id).orElseThrow(() -> new SubscriptionNotFoundException(id));
+
+        if (!isOwner(ownerId, id)) {
+            throw new OnlyOwnerCanUpdateException();
+        }
 
         // > 0 and bigger than approveds
         if (dto.getCapacity() != null) {
@@ -196,6 +200,11 @@ public class SubscriptionService {
         return toDTO(subsRepository.save(existing));
     }
 
+    private boolean isOwner(Long userId, Long subscriptionId) {
+        return subscriptionUserRepository
+                .countBySubscriptionIdAndUserIdAndRole(subscriptionId, userId, SubscriptionRole.OWNER) > 0;
+    }
+
     @Transactional
     public void cancel(Long id, Long ownerId) {
         Subscription subscription = subsRepository
@@ -215,7 +224,7 @@ public class SubscriptionService {
         dto.setStatus(subscription.getStatus());
         dto.setAmount(subscription.getAmount());
         dto.setCountry(subscription.getCountry());
-        dto.setCurrency(getCurrencyByCountry(subscription.getCountry()));
+        dto.setCurrency(CurrencyUtils.getCurrencyByCountry(subscription.getCountry()));
         dto.setDateStart(subscription.getDateStart());
         dto.setDateEnd(subscription.getDateEnd());
         dto.setCapacity(subscription.getCapacity());

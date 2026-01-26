@@ -171,6 +171,29 @@ public class SubscriptionUserService {
                 .toList();
     }
 
+    @Transactional
+    public void changeOwner(Long subscriptionId, Long newOwnerId, Long currentOwnerId) {
+        SubscriptionUser currentOwner = subscriptionUserRepository
+                .findBySubscriptionIdAndUserIdAndRole(subscriptionId, currentOwnerId, SubscriptionRole.OWNER)
+                .orElseThrow(() -> new OnlyOwnerCanUpdateException());
+
+        SubscriptionUser novoOwner = subscriptionUserRepository
+                .findBySubscriptionIdAndUserId(subscriptionId, newOwnerId)
+                .orElseThrow(() -> new UserNotFoundException(newOwnerId));
+
+        //todo exception
+        if (currentOwnerId.equals(newOwnerId)) {
+            throw new RuntimeException("Cannot transfer ownership to yourself");
+        }
+
+        currentOwner.setRole(SubscriptionRole.MEMBER);
+        novoOwner.setRole(SubscriptionRole.OWNER);
+
+        subscriptionUserRepository.save(currentOwner);
+        subscriptionUserRepository.save(novoOwner);
+    }
+
+
     //removes a user from a subscription actionUserId - who wants to remove | targetUserId - who will be removed
     @Transactional
     public void removeUser(Long subscriptionId, Long actionUserId, Long targetUserId ) {
@@ -191,6 +214,12 @@ public class SubscriptionUserService {
         SubscriptionUser targetSubsUser = subscriptionUserRepository
                 .findBySubscriptionAndUser(subscription, targetUser)
                 .orElseThrow(() -> new SubscriptionUserNotFoundException(subscriptionId, targetUserId));
+
+        //todo exception
+        if (targetSubsUser.getRole() == SubscriptionRole.OWNER
+                && subscriptionUserRepository.countBySubscriptionIdAndRole(subscriptionId, SubscriptionRole.OWNER) <= 1) {
+            throw new RuntimeException("Cannot remove last OWNER");
+        }
 
         if (actionSubsUser.getRole() != SubscriptionRole.OWNER) {
             throw new OnlyOwnerCanRemoveMemberException(actionSubsUser.getRole());}

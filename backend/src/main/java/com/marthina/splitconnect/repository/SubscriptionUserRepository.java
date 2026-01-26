@@ -8,7 +8,6 @@ import com.marthina.splitconnect.model.enums.SubscriptionUserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,4 +32,9 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
 
     List<SubscriptionUser> findBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);
 
+    int countBySubscriptionIdAndRole(Long subscriptionId, SubscriptionRole subscriptionRole);
+
+    Optional<SubscriptionUser>  findBySubscriptionIdAndUserIdAndRole(Long subscriptionId, Long currentOwnerId, SubscriptionRole subscriptionRole);
+
+    int countBySubscriptionIdAndUserIdAndRole(Long subscriptionId, Long userId, SubscriptionRole subscriptionRole);
 }

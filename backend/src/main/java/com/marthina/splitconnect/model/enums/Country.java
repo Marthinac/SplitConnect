@@ -1,71 +1,94 @@
 package com.marthina.splitconnect.model.enums;
 
+import lombok.Getter;
+
+import java.util.Locale;
+
+@Getter
 public enum Country {
-    BR("Brazil"),
-    US("United States"),
-    CA("Canada"),
-    MX("Mexico"),
-    AR("Argentina"),
-    CL("Chile"),
-    PE("Peru"),
-    CO("Colombia"),
-    UY("Uruguay"),
-    BO("Bolivia"),
-    GB("United Kingdom"),
-    DE("Germany"),
-    FR("France"),
-    IT("Italy"),
-    ES("Spain"),
-    PT("Portugal"),
-    NL("Netherlands"),
-    BE("Belgium"),
-    DK("Denmark"),
-    PL("Poland"),
-    HU("Hungary"),
-    CZ("Czech Republic"),
-    RO("Romania"),
-    CH("Switzerland"),
-    LU("Luxembourg"),
-    SE("Sweden"),
-    NO("Norway"),
-    TR("Turkey"),
-    JP("Japan"),
-    CN("China"),
-    TW("Taiwan"),
-    IN("India"),
-    BD("Bangladesh"),
-    PK("Pakistan"),
-    VN("Vietnam"),
-    KR("South Korea"),
-    SG("Singapore"),
-    HK("Hong Kong"),
-    TH("Thailand"),
-    ID("Indonesia"),
-    PH("Philippines"),
-    MY("Malaysia"),
-    AE("United Arab Emirates"),
-    SA("Saudi Arabia"),
-    QA("Qatar"),
-    KW("Kuwait"),
-    BH("Bahrain"),
-    OMR("Oman"),
-    IL("Israel"),
-    AU("Australia"),
-    NZ("New Zealand"),
-    RU("Russia"),
-    ZA("South Africa"),
-    NG("Nigeria"),
-    KE("Kenya"),
-    EG("Egypt"),
-    MA("Morocco");
+    BR("Brazil", Currency.BRL),
+    US("United States", Currency.USD),
+    CA("Canada", Currency.CAD),
+    MX("Mexico", Currency.MXN),
+    AR("Argentina", Currency.ARS),
+    CL("Chile", Currency.CLP),
+    PE("Peru", Currency.PEN),
+    CO("Colombia", Currency.COP),
+    UY("Uruguay", Currency.UYU),
+    BO("Bolivia", Currency.BOB),
+    GB("United Kingdom", Currency.GBP),
+    DE("Germany", Currency.EUR),
+    FR("France", Currency.EUR),
+    IT("Italy", Currency.EUR),
+    ES("Spain", Currency.EUR),
+    PT("Portugal", Currency.EUR),
+    NL("Netherlands", Currency.EUR),
+    BE("Belgium", Currency.EUR),
+    DK("Denmark", Currency.DKK),
+    PL("Poland", Currency.PLN),
+    HU("Hungary", Currency.HUF),
+    CZ("Czech Republic", Currency.CZK),
+    RO("Romania", Currency.RON),
+    CH("Switzerland", Currency.CHF),
+    LU("Luxembourg", Currency.EUR),
+    SE("Sweden", Currency.SEK),
+    NO("Norway", Currency.NOK),
+    TR("Turkey", Currency.TRY),
+    JP("Japan", Currency.JPY),
+    CN("China", Currency.CNY),
+    TW("Taiwan", Currency.TWD),
+    IN("India", Currency.INR),
+    BD("Bangladesh", Currency.BDT),
+    PK("Pakistan", Currency.PKR),
+    VN("Vietnam", Currency.VND),
+    KR("South Korea", Currency.KRW),
+    SG("Singapore", Currency.SGD),
+    HK("Hong Kong", Currency.HKD),
+    TH("Thailand", Currency.THB),
+    ID("Indonesia", Currency.IDR),
+    PH("Philippines", Currency.PHP),
+    MY("Malaysia", Currency.MYR),
+    AE("United Arab Emirates", Currency.AED),
+    SA("Saudi Arabia", Currency.SAR),
+    QA("Qatar", Currency.QAR),
+    KW("Kuwait", Currency.KWD),
+    BH("Bahrain", Currency.BHD),
+    OMR("Oman", Currency.OMR),
+    IL("Israel", Currency.ILS),
+    AU("Australia", Currency.AUD),
+    NZ("New Zealand", Currency.NZD),
+    RU("Russia", Currency.RUB),
+    ZA("South Africa", Currency.ZAR),
+    NG("Nigeria", Currency.NGN),
+    KE("Kenya", Currency.KES),
+    EG("Egypt", Currency.EGP),
+    MA("Morocco", Currency.MAD);
 
     private final String fullName;
+    private final Currency currency;  // ← SEU ENUM!
 
-    Country(String fullName) {
+    Country(String fullName, Currency currency) {
         this.fullName = fullName;
+        this.currency = currency;
     }
 
-    public String getFullName() {
-        return fullName;
+    public Locale getLocale() {
+        return switch (this) {
+            case BR -> Locale.forLanguageTag("pt-BR");
+            case US -> Locale.US;
+            case DE -> Locale.forLanguageTag("de-DE");
+            case GB -> Locale.UK;
+            case FR -> Locale.FRANCE;
+            case ES -> Locale.forLanguageTag("es-ES");
+            case IT -> Locale.ITALY;
+            case PT -> Locale.forLanguageTag("pt-PT");
+            case MX -> Locale.forLanguageTag("es-MX");
+            case AR -> Locale.forLanguageTag("es-AR");
+            case IN -> Locale.forLanguageTag("hi-IN");
+            case JP -> Locale.JAPAN;
+            case CN -> Locale.forLanguageTag("zh-CN");
+            default -> Locale.ENGLISH;
+        };
     }
 }
+

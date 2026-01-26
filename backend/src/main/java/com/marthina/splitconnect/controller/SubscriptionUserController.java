@@ -78,6 +78,17 @@ public class SubscriptionUserController {
         );
     }
 
+    @PatchMapping("/owner/{newOwnerId}")
+    public ResponseEntity<Void> changeOwner(
+            @PathVariable Long subscriptionId,
+            @PathVariable Long newOwnerId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        Long currentOwnerId = userPrincipal.getId();
+        subsUserService.changeOwner(subscriptionId, newOwnerId, currentOwnerId);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{targetUserId}")
     public ResponseEntity<Void> removeUser(
             @PathVariable Long subscriptionId,
