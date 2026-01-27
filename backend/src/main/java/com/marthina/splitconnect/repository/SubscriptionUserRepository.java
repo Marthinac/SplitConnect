@@ -25,7 +25,6 @@ public interface SubscriptionUserRepository extends JpaRepository<SubscriptionUs
     // Busca o vínculo específico (para remoção)
     Optional<SubscriptionUser> findBySubscriptionAndUser(Subscription subscription, User user);
     Optional<SubscriptionUser> findBySubscriptionIdAndUserId(Long subsId, Long userId);
-
     Optional<SubscriptionUser> findByIdAndSubscriptionOwnerId(Long subscriptionUserId, Long ownerId);
 
     int countBySubscriptionAndStatus(Subscription subscription, SubscriptionUserStatus subscriptionUserStatus);

@@ -3,6 +3,7 @@ package com.marthina.splitconnect.controller;
 import com.marthina.splitconnect.dto.SubscriptionUserDTO;
 import com.marthina.splitconnect.security.auth.UserPrincipal;
 import com.marthina.splitconnect.service.SubscriptionUserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +34,7 @@ public class SubscriptionUserController {
     @PostMapping("/{subscriptionUserId}/approve")
     public ResponseEntity<SubscriptionUserDTO> approveJoin(
             @PathVariable Long subscriptionUserId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {  // deve ser owner
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         SubscriptionUserDTO result = subsUserService
                 .approveJoin(subscriptionUserId, userPrincipal.getId());
@@ -43,7 +44,7 @@ public class SubscriptionUserController {
     @PostMapping("/pending/{subscriptionUserId}/reject")
     public ResponseEntity<SubscriptionUserDTO> rejectJoin(
             @PathVariable Long subscriptionUserId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {  // deve ser owner
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         SubscriptionUserDTO result = subsUserService
                 .rejectJoin(subscriptionUserId, userPrincipal.getId());
@@ -63,16 +64,19 @@ public class SubscriptionUserController {
     @PostMapping
     public ResponseEntity<SubscriptionUserDTO> addDirectUser(
             @PathVariable Long subscriptionId,
-            @RequestBody SubscriptionUserDTO dto) {
+            @RequestBody @Valid SubscriptionUserDTO dto,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         SubscriptionUserDTO added =
-                subsUserService.addDirectUser(subscriptionId, dto);
+                subsUserService.addDirectUser(subscriptionId, dto, userPrincipal.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(added);
     }
 
     @GetMapping
-    public ResponseEntity<List<SubscriptionUserDTO>> findUsersBySubscription(@PathVariable Long subscriptionId) {
+    public ResponseEntity<List<SubscriptionUserDTO>> findUsersBySubscription(
+            @PathVariable Long subscriptionId) {
+
         return ResponseEntity.ok(
                 subsUserService.findUsersBySubscription(subscriptionId)
         );
@@ -90,14 +94,14 @@ public class SubscriptionUserController {
     }
 
     @DeleteMapping("/{targetUserId}")
-    public ResponseEntity<Void> removeUser(
+    public ResponseEntity<Void> removeParticipant(
             @PathVariable Long subscriptionId,
             @PathVariable Long targetUserId,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         Long actionUserId = userPrincipal.getId();
 
-        subsUserService.removeUser(subscriptionId, actionUserId, targetUserId);
+        subsUserService.removeParticipant(subscriptionId, actionUserId, targetUserId);
         return ResponseEntity.noContent().build();
     }
 

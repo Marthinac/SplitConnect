@@ -21,8 +21,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.marthina.splitconnect.model.CurrencyUtils.getCurrencyByCountry;
-
 @Service
 public class SubscriptionService {
 
@@ -112,7 +110,7 @@ public class SubscriptionService {
 
 
     @Transactional(readOnly = true)
-    public Page<AvailableSubscriptionDTO> findAvailableSubscriptions(
+    public Page<AvailableSubscriptionDTO> findAvailable(
             Pageable pageable,
             Country country,
             ServicesType serviceType) {
@@ -120,6 +118,14 @@ public class SubscriptionService {
         return subsRepository.findAvailableSubscriptions(pageable, country, serviceType)
                 .map(this::toAvailableSubscriptionDTO);
     }
+
+    public Page<SubscriptionDTO> findFiltered(Country country, ServicesType serviceType,
+                                              BigDecimal maxPrice, Boolean hasVacancy, String serviceName, Pageable pageable) {
+
+        return subsRepository.findFiltered(country, serviceType, maxPrice,
+                hasVacancy, serviceName, pageable).map(this::toDTO);
+    }
+
 
     private AvailableSubscriptionDTO toAvailableSubscriptionDTO(Subscription subscription) {
         int usedSlots = subscriptionUserRepository

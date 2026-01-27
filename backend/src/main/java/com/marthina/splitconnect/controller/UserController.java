@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -30,13 +29,17 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> create (@Valid @RequestBody UserCreateDTO dto){
+    public ResponseEntity<UserResponseDTO> create (
+            @Valid @RequestBody UserCreateDTO dto){
+
         UserResponseDTO created = userService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id){
+    public ResponseEntity<UserResponseDTO> findById(
+            @PathVariable Long id){
+
         return ResponseEntity.ok(userService.findById(id));
     }
 
@@ -50,12 +53,23 @@ public class UserController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody UserCreateDTO dto){
+    public ResponseEntity<UserResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody @Valid UserCreateDTO dto,
+            @AuthenticationPrincipal UserPrincipal userPrincipal){
+
+        if (!userPrincipal.getId().equals(id)) {
+            throw new UserNotAuthorizedException(id, userPrincipal.getId());
+        }
+
         return ResponseEntity.ok(userService.update(id, dto));
     }
 
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestBody @Valid ChangePasswordDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public ResponseEntity<Void> changePassword(
+            @PathVariable Long id,
+            @RequestBody @Valid ChangePasswordDTO dto,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         if (!userPrincipal.getId().equals(id)) {
             throw new UserNotAuthorizedException(id, userPrincipal.getId());
@@ -66,7 +80,10 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/email")
-    public ResponseEntity<Void> changeEmail(@PathVariable Long id, @RequestBody @Valid ChangeEmailDTO dto, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public ResponseEntity<Void> changeEmail(
+            @PathVariable Long id,
+            @RequestBody @Valid ChangeEmailDTO dto,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
         if (!userPrincipal.getId().equals(id)) {
             throw new UserNotAuthorizedException(id, userPrincipal.getId());
@@ -77,7 +94,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal){
+
+        if (!userPrincipal.getId().equals(id)) {
+            throw new UserNotAuthorizedException(id, userPrincipal.getId());
+        }
+
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -92,5 +116,4 @@ public class UserController {
 
         return ResponseEntity.ok(userService.findById(principal.getId()));
     }
-
 }

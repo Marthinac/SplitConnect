@@ -119,13 +119,13 @@ public class SubscriptionUserService {
 
     //add user in a subscription (owner creating the subs., owner inviting frinds to subs., admin add member)
     @Transactional
-    public SubscriptionUserDTO addDirectUser(Long subscriptionId, SubscriptionUserDTO dto) {
+    public SubscriptionUserDTO addDirectUser(Long subscriptionId, SubscriptionUserDTO dto, long userId) {
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
 
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new UserNotFoundException(dto.getUserId()));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (dto.getRole() == SubscriptionRole.OWNER) {
             boolean ownerExists = subscriptionUserRepository.existsBySubscriptionAndRole(subscription, SubscriptionRole.OWNER);
@@ -196,7 +196,7 @@ public class SubscriptionUserService {
 
     //removes a user from a subscription actionUserId - who wants to remove | targetUserId - who will be removed
     @Transactional
-    public void removeUser(Long subscriptionId, Long actionUserId, Long targetUserId ) {
+    public void removeParticipant(Long subscriptionId, Long actionUserId, Long targetUserId ) {
 
         Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));

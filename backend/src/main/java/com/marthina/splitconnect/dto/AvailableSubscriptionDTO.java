@@ -3,7 +3,6 @@ package com.marthina.splitconnect.dto;
 import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
 import com.marthina.splitconnect.model.enums.SubscriptionStatus;
-import jdk.jshell.Snippet;
 import lombok.Getter;
 import lombok.Setter;
 
