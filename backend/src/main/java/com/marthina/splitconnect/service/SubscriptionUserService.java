@@ -242,6 +242,8 @@ public class SubscriptionUserService {
         dto.setDate(subsUser.getCreatedAt());
         dto.setActive(subsUser.isActive());
         dto.setSubscriptionStatus(subsUser.getSubscription().getStatus());
+        dto.setCreatedById(subsUser.getCreatedBy()); // User que criou/requestou
+        dto.setLastModifiedById(subsUser.getLastModifiedBy()); // Owner que aprovou
         return dto;
     }
 

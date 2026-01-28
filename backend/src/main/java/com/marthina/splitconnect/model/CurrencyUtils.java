@@ -2,14 +2,15 @@ package com.marthina.splitconnect.model;
 
 import com.marthina.splitconnect.model.enums.Country;
 import com.marthina.splitconnect.model.enums.Currency;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.EnumMap;
-import java.util.Locale;
 import java.util.Map;
 
+@Component
 public class CurrencyUtils {
 
     private static final Map<Country, Currency> COUNTRY_TO_CURRENCY = new EnumMap<>(Country.class);
@@ -91,7 +92,10 @@ public class CurrencyUtils {
 
     public static String formatAmountPerPerson(BigDecimal amount, int capacity, Country country) {
         BigDecimal perPerson = amount.divide(BigDecimal.valueOf(capacity), 2, RoundingMode.HALF_UP);
-        return NumberFormat.getCurrencyInstance(country.getLocale())
-                .format(perPerson);
+        return NumberFormat.getCurrencyInstance(country.getLocale()).format(perPerson);
+    }
+
+    public static String formatAmount(BigDecimal amount, Country country) {
+        return NumberFormat.getCurrencyInstance(country.getLocale()).format(amount);
     }
 }

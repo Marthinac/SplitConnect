@@ -2,7 +2,6 @@ package com.marthina.splitconnect.model;
 
 import com.marthina.splitconnect.model.enums.Country;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 @Table(name = "users")
-public class User {
+public class User extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -16,11 +17,12 @@ public class AvailableSubscriptionDTO {
     private String serviceName;
     private String ownerName;
     private Country country;
-    private BigDecimal pricePerUser; // amount / capacity
     private Currency currency;
     private Integer totalSlots;
     private Integer usedSlots;
     private Boolean hasVacancy;
     private SubscriptionStatus status;
+    private String formattedPricePerUser;
+    private String formattedAmount;
 
 }

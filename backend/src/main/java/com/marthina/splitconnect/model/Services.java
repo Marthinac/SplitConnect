@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "services")
-public class Services {
+public class Services extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

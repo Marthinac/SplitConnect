@@ -15,6 +15,10 @@ public class SubscriptionUserDTO {
     private Long userId;
     private Long subsId;
 
+    //auditoria
+    private Long createdById;
+    private Long lastModifiedById;
+
     private SubscriptionRole role;
     private LocalDateTime date;
 

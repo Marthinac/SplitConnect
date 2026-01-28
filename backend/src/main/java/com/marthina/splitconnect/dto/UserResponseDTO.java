@@ -12,6 +12,7 @@ public class UserResponseDTO {
     private Long id;
     private String name;
     private Country country;
+    //todo tirar no fim do projeto depois dos testes, pois é dado sensível
     private String email;
 
 }

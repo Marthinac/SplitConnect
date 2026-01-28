@@ -9,6 +9,7 @@ import com.marthina.splitconnect.repository.ServicesRepository;
 import com.marthina.splitconnect.repository.SubscriptionRepository;
 import com.marthina.splitconnect.repository.SubscriptionUserRepository;
 import com.marthina.splitconnect.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Service
 public class SubscriptionService {
@@ -119,11 +121,12 @@ public class SubscriptionService {
                 .map(this::toAvailableSubscriptionDTO);
     }
 
-    public Page<SubscriptionDTO> findFiltered(Country country, ServicesType serviceType,
+    @Transactional(readOnly = true)
+    public Page<AvailableSubscriptionDTO> findFiltered(Country country, ServicesType serviceType,
                                               BigDecimal maxPrice, Boolean hasVacancy, String serviceName, Pageable pageable) {
 
         return subsRepository.findFiltered(country, serviceType, maxPrice,
-                hasVacancy, serviceName, pageable).map(this::toDTO);
+                hasVacancy, serviceName, pageable).map(this::toAvailableSubscriptionDTO);
     }
 
 
@@ -134,23 +137,20 @@ public class SubscriptionService {
         boolean hasVacancy = usedSlots < subscription.getCapacity()
                 && subscription.getStatus() == SubscriptionStatus.ACTIVE;
 
-        BigDecimal pricePerUser = subscription.getAmount()
-                .divide(BigDecimal.valueOf(subscription.getCapacity()), 2, RoundingMode.HALF_UP);
-
         AvailableSubscriptionDTO dto = new AvailableSubscriptionDTO();
         dto.setId(subscription.getId());
         dto.setServiceName(subscription.getService().getName());
         dto.setOwnerName(subscription.getOwner().getName());
         dto.setCountry(subscription.getCountry());
-        dto.setPricePerUser(pricePerUser);
         dto.setTotalSlots(subscription.getCapacity());
+        dto.setCurrency(CurrencyUtils.getCurrencyByCountry(subscription.getCountry()));
+        dto.setFormattedAmount(CurrencyUtils.formatAmount(subscription.getAmount(), subscription.getCountry()));
+        dto.setFormattedPricePerUser(CurrencyUtils.formatAmountPerPerson(subscription.getAmount(), subscription.getCapacity(), subscription.getCountry()));
         dto.setUsedSlots(usedSlots);
         dto.setHasVacancy(hasVacancy);
         dto.setStatus(subscription.getStatus());
-        dto.setCurrency(CurrencyUtils.getCurrencyByCountry(subscription.getCountry()));
 
         return dto;
-
     }
 
     public void checkAndExpire(Subscription subscription) {
@@ -230,10 +230,12 @@ public class SubscriptionService {
         dto.setStatus(subscription.getStatus());
         dto.setAmount(subscription.getAmount());
         dto.setCountry(subscription.getCountry());
+        dto.setCapacity(subscription.getCapacity());
         dto.setCurrency(CurrencyUtils.getCurrencyByCountry(subscription.getCountry()));
+        dto.setFormattedAmount(CurrencyUtils.formatAmount(subscription.getAmount(), subscription.getCountry()));
+        dto.setFormattedPricePerUser(CurrencyUtils.formatAmountPerPerson(subscription.getAmount(), subscription.getCapacity(), subscription.getCountry()));
         dto.setDateStart(subscription.getDateStart());
         dto.setDateEnd(subscription.getDateEnd());
-        dto.setCapacity(subscription.getCapacity());
         dto.setUsedSlots(subscriptionUserRepository.
                 countBySubscriptionAndStatus(subscription, SubscriptionUserStatus.APPROVED));
         dto.setHasVacancy(dto.getUsedSlots() < subscription.getCapacity() &&

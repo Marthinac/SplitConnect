@@ -64,7 +64,7 @@ public class SubscriptionController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<SubscriptionDTO>> findFiltered(
+    public ResponseEntity<Page<AvailableSubscriptionDTO>> findFiltered(
             @RequestParam(required = false) Country country,
             @RequestParam(required = false) ServicesType serviceType,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -72,7 +72,7 @@ public class SubscriptionController {
             @RequestParam(required = false) String serviceName,
             @PageableDefault(size = 10) Pageable pageable) {
 
-        Page<SubscriptionDTO> result = subsService.findFiltered(
+        Page<AvailableSubscriptionDTO> result = subsService.findFiltered(
                 country, serviceType, maxPrice, hasVacancy, serviceName, pageable);
         return ResponseEntity.ok(result);
     }

@@ -25,6 +25,8 @@ public class SubscriptionDTO {
     @NotNull
     private BigDecimal amount;
     private Currency currency;
+    private String formattedAmount;
+    private String formattedPricePerUser;
     @NotNull @FutureOrPresent
     private LocalDate dateStart;
     @NotNull @Future

@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "subscription")
-public class Subscription {
+public class Subscription extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

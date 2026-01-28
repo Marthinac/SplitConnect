@@ -1,6 +1,5 @@
 package com.marthina.splitconnect.security.auth;
 
-import com.marthina.splitconnect.exception.UserNotFoundException;
 import com.marthina.splitconnect.model.User;
 import com.marthina.splitconnect.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
