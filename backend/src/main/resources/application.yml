@@ -1,0 +1,41 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}  # ← Default DEV!
+
+  # Base comum (dev/prod)
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # MVC JSON
+  mvc:
+    converters:
+      preferred-json-mapper: jackson
+
+# JWT Base (override por profile)
+jwt:
+  expiration: 86400000  # 24h
+
+# Server
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Logging Base
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# todo OAuth2 Google (REMOVA se não usar AGORA)
+# spring:
+#   security:
+#     oauth2:
+#       client:
+#         registration:
+#           google:
+#             client-id: ${GOOGLE_CLIENT_ID:}
+#             client-secret: ${GOOGLE_CLIENT_SECRET:}

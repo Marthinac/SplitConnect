@@ -12,12 +12,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
-
+@Validated
 @RestController
 @RequestMapping("/subscriptions")
 public class SubscriptionController {
@@ -28,6 +30,7 @@ public class SubscriptionController {
         this.subsService = subsService;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<SubscriptionDTO> create (
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -77,6 +80,7 @@ public class SubscriptionController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<SubscriptionDTO> update(
             @PathVariable Long id,
@@ -88,6 +92,7 @@ public class SubscriptionController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(
             @PathVariable Long id,

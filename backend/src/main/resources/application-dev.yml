@@ -1,0 +1,22 @@
+# Desenvolvimento (DEBUG + flexível)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/splitconnect
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # ← Flexível dev
+    show-sql: true  # ← SQL visível
+
+jwt:
+  secret: splitconnect-super-secret-9876543210-abc123def456ghi789-local-dev!  # ← Local
+
+logging:
+  level:
+    com.marthina.splitconnect: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # ← Params SQL!

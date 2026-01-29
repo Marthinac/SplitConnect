@@ -193,6 +193,10 @@ public class SubscriptionUserService {
         subscriptionUserRepository.save(novoOwner);
     }
 
+    public boolean isSubscriptionOwner(Long userId, Long subsUserId) {
+        return subscriptionUserRepository.findByIdAndSubscriptionOwnerId(subsUserId, userId)
+                .isPresent();
+    }
 
     //removes a user from a subscription actionUserId - who wants to remove | targetUserId - who will be removed
     @Transactional
@@ -246,6 +250,4 @@ public class SubscriptionUserService {
         dto.setLastModifiedById(subsUser.getLastModifiedBy()); // Owner que aprovou
         return dto;
     }
-
-
 }

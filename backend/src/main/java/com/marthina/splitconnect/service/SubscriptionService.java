@@ -55,8 +55,8 @@ public class SubscriptionService {
         } else {
             // Se não enviou ID, cria um novo serviço com nome e tipo
             service = new Services();
-            service.setName(dto.getServiceName());       // ex: "Amazon Prime"
-            service.setType(dto.getServiceType());       // enum: MOVIES, STREAMING...
+            service.setName(dto.getServiceName());
+            service.setType(dto.getServiceType());
             service = servicesRepository.save(service);
         }
 
@@ -82,7 +82,6 @@ public class SubscriptionService {
         );
 
         subscriptionUserRepository.save(ownerLink);
-
 
         return toDTO(saved);
     }

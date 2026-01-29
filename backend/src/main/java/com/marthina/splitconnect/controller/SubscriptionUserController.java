@@ -6,11 +6,14 @@ import com.marthina.splitconnect.service.SubscriptionUserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/subscription/{subscriptionId}/users")
 public class SubscriptionUserController {
@@ -21,6 +24,7 @@ public class SubscriptionUserController {
         this.subsUserService = subsUserService;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/request")
     public ResponseEntity<SubscriptionUserDTO> requestJoin(
             @PathVariable Long subscriptionId,
@@ -31,6 +35,7 @@ public class SubscriptionUserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionUserId)")
     @PostMapping("/{subscriptionUserId}/approve")
     public ResponseEntity<SubscriptionUserDTO> approveJoin(
             @PathVariable Long subscriptionUserId,
@@ -41,6 +46,7 @@ public class SubscriptionUserController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionUserId)")
     @PostMapping("/pending/{subscriptionUserId}/reject")
     public ResponseEntity<SubscriptionUserDTO> rejectJoin(
             @PathVariable Long subscriptionUserId,
@@ -51,6 +57,7 @@ public class SubscriptionUserController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionId)")
     @GetMapping("/requests")
     public ResponseEntity<List<SubscriptionUserDTO>> listPendingRequests(
             @PathVariable Long subscriptionId,
@@ -61,6 +68,7 @@ public class SubscriptionUserController {
         return ResponseEntity.ok(requests);
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionId)")
     @PostMapping
     public ResponseEntity<SubscriptionUserDTO> addDirectUser(
             @PathVariable Long subscriptionId,
@@ -82,6 +90,7 @@ public class SubscriptionUserController {
         );
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionId)")
     @PatchMapping("/owner/{newOwnerId}")
     public ResponseEntity<Void> changeOwner(
             @PathVariable Long subscriptionId,
@@ -93,6 +102,7 @@ public class SubscriptionUserController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("@subsUserService.isSubscriptionOwner(authentication.principal.id, #subscriptionId)")
     @DeleteMapping("/{targetUserId}")
     public ResponseEntity<Void> removeParticipant(
             @PathVariable Long subscriptionId,
